@@ -1,12 +1,7 @@
-{ open Parser }
+{ open Parser
 (* Reference: https://ocaml.org/manual/lexyacc.html *)
-let digit = ['0' - '9']
-let digits = digit+
-let float = digits? '.' digits?
-let quote = ['\'' '\"']
-
 (* 2.7 keywords *)
-{ let keyword_table = Hashtbl.create 53
+let keyword_table = Hashtbl.create 53
   let _ =
     List.iter (fun (kwd, tok) -> Hashtbl.add keyword_table kwd tok)
       [ "if", IF;
@@ -28,15 +23,20 @@ let quote = ['\'' '\"']
       ]
 }
 
+let digit = ['0' - '9']
+let digits = digit+
+let float = digits? '.' digits?
+let quote = ['\'' '\"']
+
 rule tokenize = parse
   [' ' '\t' '\r' '\n'] { tokenize lexbuf }
 (* 2.2 comments *)
 | "//" { comment lexbuf } 
 | "/*" { comments lexbuf }
 (* 2.1 primitive types *)
-| digits as lit { ILIT(int_of_string lxm) }
-| float as lit { FLIT(float_of_string lxm) }
-| quote^quote*quote as str { SLIT(String.sub str 1 ((String.length str) - 2)) }
+| digits as lit { ILIT(int_of_string lit) }
+| float as lit { FLIT(float_of_string lit) }
+| '"' ([^ '"']* as lit) '"' { SLIT(lit) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
 | '+'        { PLUS } 
@@ -63,9 +63,9 @@ rule tokenize = parse
 | ','        { COMMA }
 | ';'        { SEMI }
 (* 2.7 keywords *)
-| ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as lxm
-  { print_endline "find lxm: ";
-    print_endline lxm;
+| ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
+  { print_endline "find id: ";
+    print_endline id;
     try
       Hashtbl.find keyword_table id
     with Not_found ->
@@ -75,8 +75,8 @@ rule tokenize = parse
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comments = parse
-  "*/" { token lexbuf }
+  "*/" { tokenize lexbuf }
   | _    { comments lexbuf }
 and comment = parse
-  '\n' { token lexbuf }
+  '\n' { tokenize lexbuf }
   | _ { comment lexbuf }
