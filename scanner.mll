@@ -35,6 +35,8 @@ rule tokenize = parse
 | '"' ([^ '"']* as lit) '"' { SLIT(lit) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
+| "+="       { PLUSASSIGN }
+| "-="       { MINUSASSIGN }
 | '+'        { PLUS } 
 | '-'        { MINUS }
 | '*'        { TIMES }
