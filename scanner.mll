@@ -15,11 +15,7 @@ let keyword_table = Hashtbl.create 53
         "return", RETURN;
         "null", NULL;
         "function", FUNCTION;
-        "try", TRY;
-        "catch", CATCH;
-        "throw", THROW;
         "import", IMPORT;
-        "export", EXPORT;
       ]
 }
 
