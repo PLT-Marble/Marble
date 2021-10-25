@@ -21,7 +21,7 @@ let keyword_table = Hashtbl.create 53
 
 let digit = ['0' - '9']
 let digits = digit+
-let float = digits? '.' digits?
+let float = digits '.' digits
 let quote = ['\'' '\"']
 
 rule tokenize = parse
