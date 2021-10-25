@@ -27,6 +27,7 @@ let keyword_table = Hashtbl.create 53
 let digit = ['0' - '9']
 let digits = digit+
 let float = digits '.' digits
+let boolean = "true" | "false"
 let quote = ['\'' '\"']
 
 rule tokenize = parse
@@ -34,9 +35,10 @@ rule tokenize = parse
 (* 2.2 comments *)
 | "//" { comment lexbuf } 
 | "/*" { comments lexbuf }
-(* 2.1 primitive types *)
+(* 2.1 types *)
 | digits as lit { ILIT(int_of_string lit) }
 | float as lit { FLIT(float_of_string lit) }
+| boolean as lit { BOOL(bool_of_string lit) }
 | '"' ([^ '"']* as lit) '"' { SLIT(lit) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
