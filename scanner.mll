@@ -14,13 +14,13 @@ let keyword_table = Hashtbl.create 53
         "main", MAIN;
         "return", RETURN;
         "function", FUNCTION;
+        "class", CLASS;
         "import", IMPORT;
         "int", INT;
         "float", FLOAT;
         "boolean", BOOLEAN;
         "null", NULL;
         "string", STRING;
-        "matrix", MATRIX;
       ]
 }
 
