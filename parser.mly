@@ -21,48 +21,47 @@
 %left PLUS MINUS
 %left TIMES DIVIDE
 
-%start expr
-%type <Ast.expr> expr
+%start main
+%type <Ast.main> main
 
 %%
 
-class: ID LBRACE filddecls constrs fdecls mains RBRACE
+class: ID LBRACE vdecls constrs fdecls mains RBRACE
 
 constrs:
- %empty
+ /* epsilon */         
 | constr 
 | constr constrs
 
 constr: CONSTRUCTOR LPAREN formals RPAREN LBRACE stmts RBRACE
 
 formals: 
- dtype ID 
-| formals, dtype ID
+ dtype ID { [($1, $2)] }
+| formals COMMA dtype ID { ($3, $4) :: $1 }
 
 dtype: 
- ILIT 
+ ILIT
 | BOOL 
 | FLIT 
 | SLIT 
 | MLIT
 
 mains:
- %empty
-| main
+ /* epsilon */
+| main 
 
 main: MAIN LPAREN formals RPAREN LBRACE stmts RBRACE
 
-filddecls:
- %empty    
-| filddecl 
-| filddecl filddecls
+vdecls:
+ /* epsilon */    { [] }
+| vdecl vdecls { $1 :: $2 }
 
 fdecls: 
- %empty   
+ /* epsilon */   
 | fdecl 
 | fdecl fdecls
 
-filddecl:  
+vdecl:  
  ILIT ID SEMI 
 | BOOL ID SEMI 
 | FLIT ID SEMI 
@@ -70,18 +69,26 @@ filddecl:
 | MLIT ID SEMI
 
 fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE vdecls stmts RBRACE
+{
+    {
+        fname = $2;
+        formals = $4;
+        vars = $7;
+        body = $8;
+    }
+}
 
 stmts: 
- %empty 
-| stmt 
-| stmts stmt
+ /* epsilon */ { [] }
+| stmts stmt { $2 :: $1 }
 
 stmt:  
- expr SEMI 
-| RETURN expr SEMI 
-| IF LPAREN expr RPAREN stmt 
+ expr SEMI { Expr $1 }
+| RETURN expr SEMI { Return $2 }
+| IF LPAREN expr RPAREN stmt { If($3, $5, []) }
 | IF LPAREN expr RPAREN stmt ELSE stmt 
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE elif LPAREN expr RPAREN LBRACE stmts RBRACE else LBRACE stmts RBRACE  
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE ELIF LPAREN expr RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE 
+  {If($3, $6, $10, $13, $17)} 
 | FOR LPAREN expr SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE 
 | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE 
 | dtype ID = expr
@@ -109,24 +116,20 @@ expr:
 | expr REFEQ expr 
 | expr ASSIGN expr
 
-MLIT: LBRACE matrix_row_list RBRACE   
+// Matrix
 
-matrix_row_list: 
- matrix_row 
-| matrix_row SEMI matrix_row_list
+MLIT: 
+  LBRACK matrix_row_list RBRACK { $2 }
 
-matrix_row: elements
+matrix_row_list:
+  matrix_row { [$1] }
+| matrix_row SEMI matrix_row_list { $1 :: $3 }
 
-elements: element | element, elements
+matrix_row: 
+  elements { $1 }
 
-element: FLIT
+elements: 
+  element { [$1] }
+| element COMMA elements { $1 :: $3 }
 
-// expr:
-//  expr PLUS   expr { Binop($1, Add, $3) }
-// | expr MINUS  expr { Binop($1, Sub, $3) }
-// | expr TIMES  expr { Binop($1, Mul, $3) }
-// | expr DIVIDE expr { Binop($1, Div, $3) }
-// | ILIT          { Lit($1) }
-// | ID              { Var($1) }
-// | ID ASSIGN expr  { Assign($1, $3) }
-// | IF expr THEN expr ELSE expr { Condition($2, $4, $6) }
+element: FLIT { $1 }
