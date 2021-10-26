@@ -67,6 +67,7 @@ rule tokenize = parse
 | '}'        { RBRACE }
 | ','        { COMMA }
 | ';'        { SEMI }
+| '.'        { DOT }
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
   { print_endline "find id: ";
