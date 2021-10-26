@@ -20,7 +20,6 @@ let keyword_table = Hashtbl.create 53
         "int", INT;
         "float", FLOAT;
         "boolean", BOOLEAN;
-        "matrix", MATRIX;
         "null", NULL;
         "string", STRING;
       ]
@@ -31,7 +30,7 @@ let digits = digit+
 let float = digits '.' digits
 let boolean = "true" | "false"
 let quote = ['\'' '\"']
-let matrix = '[' ((float,)* float? ';')* ((float,)* float?)? ']'
+let matrix = '[' ((digits,)* digits? ';')* ((digits,)* digits?)? ']'
 
 rule tokenize = parse
   [' ' '\t' '\r' '\n'] { tokenize lexbuf }
@@ -62,7 +61,7 @@ rule tokenize = parse
 | "!"        { NOT }
 | "&&"       { AND }
 | "||"       { OR }
-| "~="       { REFEQ }
+| '.'        { DOT }
 (* 2.7 seperators *)
 | '('        { LPAREN }
 | ')'        { RPAREN }
@@ -72,7 +71,6 @@ rule tokenize = parse
 | '}'        { RBRACE }
 | ','        { COMMA }
 | ';'        { SEMI }
-| '.'        { DOT }
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
   { print_endline "find id: ";
