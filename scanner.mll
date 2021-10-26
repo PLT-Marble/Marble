@@ -29,6 +29,7 @@ let digits = digit+
 let float = digits '.' digits
 let boolean = "true" | "false"
 let quote = ['\'' '\"']
+let matrix = '[' ((digits,)* digits? ';')* ((digits,)* digits?)? ']'
 
 rule tokenize = parse
   [' ' '\t' '\r' '\n'] { tokenize lexbuf }
@@ -40,6 +41,7 @@ rule tokenize = parse
 | float as lit { FLIT(float_of_string lit) }
 | boolean as lit { BOOL(bool_of_string lit) }
 | '"' ([^ '"']* as lit) '"' { SLIT(lit) }
+| matrix as lit { MLIT(lit)}
 (* 2.6 operators *)
 | '='        { ASSIGN }
 | "+="       { PLUSASSIGN }
