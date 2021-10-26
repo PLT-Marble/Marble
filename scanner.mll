@@ -12,6 +12,7 @@ let keyword_table = Hashtbl.create 53
         "break", BREAK;
         "continue", CONTINUE;
         "main", MAIN;
+        "constructor", CONSTRUCTOR;
         "return", RETURN;
         "function", FUNCTION;
         "class", CLASS;
