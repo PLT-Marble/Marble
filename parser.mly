@@ -79,19 +79,25 @@ fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE vdecls stmts RBRACE
 }
 
 stmts: 
- /* epsilon */ { [] }
-| stmts stmt { $2 :: $1 }
+  /* nothing */  { [] }
+| stmt
+| stmt stmts { $1 :: $2 }
 
 stmt:  
- expr SEMI { Expr $1 }
-| RETURN expr SEMI { Return $2 }
-| IF LPAREN expr RPAREN stmt { If($3, $5, []) }
-| IF LPAREN expr RPAREN stmt ELSE stmt 
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE ELIF LPAREN expr RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE 
-  {If($3, $6, $10, $13, $17)} 
-| FOR LPAREN expr SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE 
-| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE 
-| dtype ID = expr
+  expr SEMI { Expr ($1) }
+| RETURN expr SEMI { Return ($2) }
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
+| FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
+| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, 6)}
+| vdecls { VDeclare($1) }
+| dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
+| ID ASSIGN expr SEMI { Assign($1, $3) }
+
+elifstmts:
+  /* nothing */  { [] }
+| ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
+
 
 expr: 
  ILIT 
