@@ -7,9 +7,12 @@
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE COMMA SEMI
 %token IF ELIF ELSE
 %token FOR WHILE BREAK CONTINUE
-%token RETURN MAIN NULL FUNCTION
+%token RETURN MAIN FUNCTION
 %token TRY CATCH THROW
-%token IMPORT EXPORT
+%token NULL
+%token INT FLOAT BOOLEAN MATRIX
+
+%token <int> INT
 %token <int> ILIT
 %token <float> FLIT
 %token <string> SLIT
@@ -21,62 +24,53 @@
 %left PLUS MINUS
 %left TIMES DIVIDE
 
-%start main
-%type <Ast.main> main
+%start program
+%type <Ast.program> program
 
 %%
 
-class: ID LBRACE vdecls constrs fdecls mains RBRACE
+program: dcels main EOF { 
+    { 
+        dcels = $1
+        main = $2 
+    } 
+}
 
-constrs:
- /* epsilon */         
-| constr 
-| constr constrs
+dcels: 
+/* epsilon */ { [], [] }
+| decls vdecl { (($2 :: fst $1), snd $1) }
+| decls fdecl { (fst $1, ($2 :: snd $1)) }
 
-constr: CONSTRUCTOR LPAREN formals RPAREN LBRACE stmts RBRACE
+vdecl: typ ID SEMI { ($1, $2, Noexpr) }
 
-formals: 
- dtype ID { [($1, $2)] }
-| formals COMMA dtype ID { ($3, $4) :: $1 }
-
-dtype: 
- ILIT
-| BOOL 
-| FLIT 
-| SLIT 
-| MLIT
-
-mains:
- /* epsilon */
-| main 
-
-main: MAIN LPAREN formals RPAREN LBRACE stmts RBRACE
-
-vdecls:
- /* epsilon */    { [] }
-| vdecl vdecls { $1 :: $2 }
-
-fdecls: 
- /* epsilon */   
-| fdecl 
-| fdecl fdecls
-
-vdecl:  
- ILIT ID SEMI 
-| BOOL ID SEMI 
-| FLIT ID SEMI 
-| SLIT ID SEMI
-| MLIT ID SEMI
-
-fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE vdecls stmts RBRACE
-{
+fdecl: FUNCTION ID LPAREN formals_opt RPAREN LBRACE stmts RBRACE {
     {
-        fname = $2;
-        formals = $4;
-        vars = $7;
-        body = $8;
+        fname = $2
+        formals = List.rev $4
+        stmts = List.rev $7
     }
 }
+
+main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
+    {
+        stmts = List.rev $5
+    }
+}
+
+formals_opt:
+/* nothing */ { [] }
+| formals   { $1 }
+
+formals: 
+| typ ID { [($1, $2, Noexpr)] }
+| formals COMMA typ ID { ($3, $4, Noexpr) :: $1 }
+
+typ: 
+| INT { Int }
+| BOOLEAN { Bool }
+| FLOAT { Float }
+| MATRIX { Matrix }
+
 
 stmts: 
  /* epsilon */ { [] }
