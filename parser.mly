@@ -43,7 +43,7 @@ dcels:
 
 vdecl: typ ID SEMI { ($1, $2, Noexpr) }
 
-fdecl: FUNCTION ID LPAREN formals_opt RPAREN LBRACE stmts RBRACE {
+fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
     {
         fname = $2
         formals = List.rev $4
@@ -57,11 +57,8 @@ main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
     }
 }
 
-formals_opt:
-/* nothing */ { [] }
-| formals   { $1 }
-
 formals: 
+/* nothing */ { [] }
 | typ ID { [($1, $2, Noexpr)] }
 | formals COMMA typ ID { ($3, $4, Noexpr) :: $1 }
 
