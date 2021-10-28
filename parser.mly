@@ -8,7 +8,6 @@
 %token IF ELIF ELSE
 %token FOR WHILE BREAK CONTINUE
 %token RETURN MAIN FUNCTION
-%token TRY CATCH THROW
 %token NULL
 %token INT FLOAT BOOLEAN MATRIX
 
@@ -21,8 +20,11 @@
 
 %left IF THEN ELSE
 %right ASSIGN
+%left EQ NEQ REFEQ
+%left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE
+
 
 %start program
 %type <Ast.program> program
@@ -91,27 +93,34 @@ elifstmts:
 
 
 expr: 
- ILIT 
-| FLIT 
-| BOOL 
-| SLIT
-| MLIT
-| ID 
-| LPAREN expr RPAREN 
-| expr PLUS expr
-| expr MINUS expr
-| expr TIMES expr
-| expr DIVIDE expr
-| expr PLUSASSIGN expr 
-| expr MINUSASSIGN expr
-| expr EQ expr
-| expr NEQ expr
-| expr LT expr
-| expr LEQ expr
-| expr GT expr
-| expr GET expr
-| expr REFEQ expr 
-| expr ASSIGN expr
+ ILIT  { iLit($1) }
+| FLIT { fLit($1) }
+| BOOL { Bool($1) }
+| MLIT { mLit($1) }
+| TRUE { Bool(true) }
+| FALSE { Bool(false) }
+| ID   { Id($1)}
+| ID LPAREN inputs RPAREN { Func($1,$3) }
+| LPAREN expr RPAREN { $2 }
+| MINUS expr      { Unary($2) }
+| expr PLUS expr   { Binop($1, Add, $3) }
+| expr MINUS expr  { Binop($1, Sub, $3) }
+| expr TIMES expr  { Binop($1, Mult, $3) }
+| expr DIVIDE expr { Binop($1, Div, $3) }
+| expr PLUSASSIGN expr  /* should be in stmt */
+| expr MINUSASSIGN expr /* should be in stmt */
+| expr EQ expr  { Binop($1, Eq, $3) }
+| expr NEQ expr { Binop($1, Neq, $3) }
+| expr LT expr  { Binop($1, Less, $3) }
+| expr LEQ expr { Binop($1, Leq, $3) }
+| expr GT expr  { Binop($1, Greater, $3) }
+| expr GEQ expr { Binop($1, Geq, $3) }
+| expr REFEQ expr  { Binop($1, Req, $3) }
+
+inputs:
+  /* nothing */  { [] }
+| expr           { [$1] }
+| expr COMMA inputs    { $1 :: $3 }
 
 // Matrix
 
