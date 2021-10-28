@@ -74,7 +74,6 @@ dtype:
 
 stmts: 
   /* nothing */  { [] }
-| stmt { [$1] }
 | stmt stmts { $1 :: $2 }
 
 stmt:  
@@ -88,8 +87,8 @@ stmt:
 | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, 6)}
 | vdecl { VDeclare($1) }
 | dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
-| ID PLUSASSIGN expr  { Assign($1, Binop($1, Add, $3)) }
-| ID MINUSASSIGN expr { Assign($1, Binop($1, Sub, $3)) }
+| ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, Add, $3)) }
+| ID MINUSASSIGN expr SEMI { Assign($1, Binop($1, Sub, $3)) }
 | ID ASSIGN expr SEMI { Assign($1, $3) }
 
 elifstmts:
