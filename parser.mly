@@ -8,12 +8,13 @@
 %token IF ELIF ELSE
 %token FOR WHILE BREAK CONTINUE
 %token RETURN MAIN FUNCTION
-%token NULL
+%token TRUE FALSE NULL
 %token INT FLOAT BOOLEAN MATRIX
 
 %token <int> INT
 %token <int> ILIT
 %token <float> FLIT
+%token <bool> BOOL
 %token <string> SLIT
 %token <string> ID
 %token EOF
@@ -31,19 +32,19 @@
 
 %%
 
-program: dcels main EOF { 
+program: decls main EOF { 
     { 
         dcels = $1
         main = $2 
     } 
 }
 
-dcels: 
+decls: 
 /* epsilon */ { [], [] }
 | decls vdecl { (($2 :: fst $1), snd $1) }
 | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
-vdecl: typ ID SEMI { ($1, $2, Noexpr) }
+vdecl: dtype ID SEMI { ($1, $2, Noexpr) }
 
 fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
     {
@@ -61,10 +62,10 @@ main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
 
 formals: 
 /* nothing */ { [] }
-| typ ID { [($1, $2, Noexpr)] }
-| formals COMMA typ ID { ($3, $4, Noexpr) :: $1 }
+| dtype ID { [($1, $2, Noexpr)] }
+| formals COMMA dtype ID { ($3, $4, Noexpr) :: $1 }
 
-typ: 
+dtype: 
 | INT { Int }
 | BOOLEAN { Bool }
 | FLOAT { Float }
@@ -73,7 +74,7 @@ typ:
 
 stmts: 
   /* nothing */  { [] }
-| stmt
+| stmt { [$1] }
 | stmt stmts { $1 :: $2 }
 
 stmt:  
@@ -85,8 +86,10 @@ stmt:
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 | FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
 | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, 6)}
-| vdecls { VDeclare($1) }
+| vdecl { VDeclare($1) }
 | dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
+| ID PLUSASSIGN expr  { Assign($1, Binop($1, Add, $3)) }
+| ID MINUSASSIGN expr { Assign($1, Binop($1, Sub, $3)) }
 | ID ASSIGN expr SEMI { Assign($1, $3) }
 
 elifstmts:
@@ -101,7 +104,7 @@ expr:
 | MLIT { mLit($1) }
 | TRUE { Bool(true) }
 | FALSE { Bool(false) }
-| ID   { Id($1)}
+| ID   { Id($1) }
 | ID LPAREN inputs RPAREN { Func($1,$3) }
 | LPAREN expr RPAREN { $2 }
 | MINUS expr      { Unary($2) }
@@ -109,8 +112,6 @@ expr:
 | expr MINUS expr  { Binop($1, Sub, $3) }
 | expr TIMES expr  { Binop($1, Mult, $3) }
 | expr DIVIDE expr { Binop($1, Div, $3) }
-| expr PLUSASSIGN expr  /* should be in stmt */
-| expr MINUSASSIGN expr /* should be in stmt */
 | expr EQ expr  { Binop($1, Eq, $3) }
 | expr NEQ expr { Binop($1, Neq, $3) }
 | expr LT expr  { Binop($1, Less, $3) }
@@ -123,8 +124,6 @@ inputs:
   /* nothing */  { [] }
 | expr           { [$1] }
 | expr COMMA inputs    { $1 :: $3 }
-
-// Matrix
 
 MLIT: 
   LBRACK matrix_row_list RBRACK { $2 }

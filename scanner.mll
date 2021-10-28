@@ -22,6 +22,8 @@ let keyword_table = Hashtbl.create 53
         "boolean", BOOLEAN;
         "null", NULL;
         "string", STRING;
+        "true", TRUE;
+        "false", FALSE;
       ]
 }
 
