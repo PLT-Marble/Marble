@@ -79,6 +79,8 @@ stmts:
 stmt:  
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
+| BREAK SEMI { Break }
+| CONTINUE SEMI { Continue }
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 | FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
