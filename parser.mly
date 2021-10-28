@@ -8,13 +8,13 @@
 %token IF ELIF ELSE
 %token FOR WHILE BREAK CONTINUE
 %token RETURN MAIN FUNCTION
-%token TRUE FALSE NULL
+%token NULL
 %token INT FLOAT BOOLEAN MATRIX
 
 %token <int> INT
 %token <int> ILIT
 %token <float> FLIT
-%token <bool> BOOL
+%token <bool> TRUE FALSE
 %token <string> SLIT
 %token <string> ID
 %token EOF
@@ -99,7 +99,6 @@ elifstmts:
 expr: 
  ILIT  { iLit($1) }
 | FLIT { fLit($1) }
-| BOOL { Bool($1) }
 | MLIT { mLit($1) }
 | TRUE { Bool(true) }
 | FALSE { Bool(false) }
