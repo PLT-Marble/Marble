@@ -24,7 +24,7 @@
 %left EQ NEQ REFEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE MOD
 
 
 %start program
@@ -32,10 +32,10 @@
 
 %%
 
-program: decls main EOF { { 
-  decls = $1;
-  main = $2;
-} }
+program: decls main EOF {{ 
+    decls = $1;
+    main = $2; 
+}}
 
 decls: 
 /* nothing */ { { vars = []; func = []; } }
@@ -54,7 +54,7 @@ fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
 
 main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
     {
-        stmts = List.rev $5;
+        stmts = List.rev $5
     }
 }
 
@@ -78,8 +78,8 @@ stmt:
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
 // hard to implement
-// | BREAK SEMI { Break }
-// | CONTINUE SEMI { Continue }
+| BREAK SEMI { Break }
+| CONTINUE SEMI { Continue }
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
@@ -109,7 +109,6 @@ expr:
 | ID LPAREN inputs RPAREN { Func($1,$3) }
 | LPAREN expr RPAREN { $2 }
 | MINUS expr      { Unary($2) }
-// expr type mismatch??? matrix < matrix  ?? 
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }
 | expr TIMES expr  { Binop($1, Mult, $3) }
