@@ -79,12 +79,14 @@ stmts:
 stmt:  
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
+// hard to implement
 | BREAK SEMI { Break }
 | CONTINUE SEMI { Continue }
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
+// replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
 | FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
-| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, 6)}
+| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
 | vdecl { VDeclare($1) }
 | dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
 | ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, Add, $3)) }
@@ -106,10 +108,12 @@ expr:
 | ID LPAREN inputs RPAREN { Func($1,$3) }
 | LPAREN expr RPAREN { $2 }
 | MINUS expr      { Unary($2) }
+// expr type mismatch??? matrix < matrix  ?? 
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }
 | expr TIMES expr  { Binop($1, Mult, $3) }
 | expr DIVIDE expr { Binop($1, Div, $3) }
+| expr MOD expr { Binop($1, Mod, $3) }
 | expr EQ expr  { Binop($1, Eq, $3) }
 | expr NEQ expr { Binop($1, Neq, $3) }
 | expr LT expr  { Binop($1, Less, $3) }
