@@ -88,14 +88,17 @@ stmt:
 | FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
 | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
 | vdecl { VDeclare($1) }
-| dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
-| ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, Add, $3)) }
-| ID MINUSASSIGN expr SEMI { Assign($1, Binop($1, Sub, $3)) }
-| ID ASSIGN expr SEMI { Assign($1, $3) }
+| assignstmt { AssignStmt($1) }
 
 elifstmts:
   /* nothing */  { [] }
 | ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
+
+assignstmt:
+  dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
+| ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, AddEq, $3)) }
+| ID MINUSASSIGN expr SEMI { Assign($1, Binop($1, SubEq, $3)) }
+| ID ASSIGN expr SEMI { Assign($1, $3) }
 
 
 expr: 
