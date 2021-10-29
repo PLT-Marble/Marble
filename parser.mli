@@ -35,8 +35,6 @@ type token =
   | RETURN
   | MAIN
   | FUNCTION
-  | TRUE
-  | FALSE
   | NULL
   | INT of (int)
   | FLOAT
@@ -44,7 +42,8 @@ type token =
   | MATRIX
   | ILIT of (int)
   | FLIT of (float)
-  | BOOL of (bool)
+  | TRUE of (bool)
+  | FALSE of (bool)
   | SLIT of (string)
   | ID of (string)
   | EOF

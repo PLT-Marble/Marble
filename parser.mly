@@ -32,38 +32,36 @@
 
 %%
 
-program: decls main EOF { 
-    { 
-        dcels = $1
-        main = $2 
-    } 
-}
+program: decls main EOF { { 
+  decls = $1;
+  main = $2;
+} }
 
 decls: 
-/* epsilon */ { [], [] }
-| decls vdecl { (($2 :: fst $1), snd $1) }
-| decls fdecl { (fst $1, ($2 :: snd $1)) }
+/* nothing */ { { vars = []; func = []; } }
+| decls vdecl { { vars = $2 :: $1.vars; func = $1.func; } }
+| decls fdecl { { vars = $1.vars; func = $2 :: $1.func; } }
 
-vdecl: dtype ID SEMI { ($1, $2, Noexpr) }
+vdecl: dtype ID SEMI { $1, $2 }
 
 fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
     {
-        fname = $2
-        formals = List.rev $4
-        stmts = List.rev $7
+        fname = $2;
+        formals = List.rev $4;
+        stmts = List.rev $7;
     }
 }
 
 main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
     {
-        stmts = List.rev $5
+        stmts = List.rev $5;
     }
 }
 
 formals: 
 /* nothing */ { [] }
-| dtype ID { [($1, $2, Noexpr)] }
-| formals COMMA dtype ID { ($3, $4, Noexpr) :: $1 }
+| dtype ID { [($1, $2)] }
+| formals COMMA dtype ID { ($3, $4) :: $1 }
 
 dtype: 
 | INT { Int }
@@ -80,8 +78,8 @@ stmt:
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
 // hard to implement
-| BREAK SEMI { Break }
-| CONTINUE SEMI { Continue }
+// | BREAK SEMI { Break }
+// | CONTINUE SEMI { Continue }
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }

@@ -1,4 +1,15 @@
-type operator = Add | Sub | Mul | Div | Eq | Neq | Less | Leq | Greater | Geq | Req
+type operator =
+  | Add
+  | Sub
+  | Mul
+  | Div
+  | Eq
+  | Neq
+  | Less
+  | Leq
+  | Greater
+  | Geq
+  | Req
 
 type expr =
   | Binop of expr * operator * expr
@@ -18,8 +29,10 @@ type stmt =
 
 type bind = typ * string
 
-type func_decl = { fname : string; formals : bind list; stmts : stmt list }
+type fdecl = { fname : string; formals : bind list; stmts : stmt list }
 
 type main = { stmts : stmt list }
 
-type program = bind list * func_decl list * main
+type decls = { vars : bind list; func : fdecl list }
+
+type program = { decls : decls; main : main }
