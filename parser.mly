@@ -24,7 +24,7 @@
 %left EQ NEQ REFEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE MOD
 
 
 %start program
@@ -32,25 +32,23 @@
 
 %%
 
-program: decls main EOF { 
-    { 
-        dcels = $1
-        main = $2 
-    } 
-}
+program: decls main EOF {{ 
+    decls = $1;
+    main = $2; 
+}}
 
 decls: 
-/* epsilon */ { [], [] }
-| decls vdecl { (($2 :: fst $1), snd $1) }
-| decls fdecl { (fst $1, ($2 :: snd $1)) }
+/* nothing */ { { vars = []; func = []; } }
+| decls vdecl { { vars = $2 :: $1.vars; func = $1.func; } }
+| decls fdecl { { vars = $1.vars; func = $2 :: $1.func; } }
 
-vdecl: dtype ID SEMI { ($1, $2, Noexpr) }
+vdecl: dtype ID SEMI { $1, $2 }
 
 fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
     {
-        fname = $2
-        formals = List.rev $4
-        stmts = List.rev $7
+        fname = $2;
+        formals = List.rev $4;
+        stmts = List.rev $7;
     }
 }
 
@@ -62,8 +60,8 @@ main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
 
 formals: 
 /* nothing */ { [] }
-| dtype ID { [($1, $2, Noexpr)] }
-| formals COMMA dtype ID { ($3, $4, Noexpr) :: $1 }
+| dtype ID { [($1, $2)] }
+| formals COMMA dtype ID { ($3, $4) :: $1 }
 
 dtype: 
 | INT { Int }
@@ -79,21 +77,26 @@ stmts:
 stmt:  
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
+// hard to implement
 | BREAK SEMI { Break }
 | CONTINUE SEMI { Continue }
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
+// replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
 | FOR LPAREN stmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
-| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, 6)}
+| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
 | vdecl { VDeclare($1) }
-| dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
-| ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, Add, $3)) }
-| ID MINUSASSIGN expr SEMI { Assign($1, Binop($1, Sub, $3)) }
-| ID ASSIGN expr SEMI { Assign($1, $3) }
+| assignstmt { AssignStmt($1) }
 
 elifstmts:
   /* nothing */  { [] }
 | ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
+
+assignstmt:
+  dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
+| ID PLUSASSIGN expr SEMI { Assign($1, Binop($1, AddEq, $3)) }
+| ID MINUSASSIGN expr SEMI { Assign($1, Binop($1, SubEq, $3)) }
+| ID ASSIGN expr SEMI { Assign($1, $3) }
 
 
 expr: 
@@ -110,6 +113,7 @@ expr:
 | expr MINUS expr  { Binop($1, Sub, $3) }
 | expr TIMES expr  { Binop($1, Mult, $3) }
 | expr DIVIDE expr { Binop($1, Div, $3) }
+| expr MOD expr { Binop($1, Mod, $3) }
 | expr EQ expr  { Binop($1, Eq, $3) }
 | expr NEQ expr { Binop($1, Neq, $3) }
 | expr LT expr  { Binop($1, Less, $3) }
