@@ -24,6 +24,9 @@ let keyword_table = Hashtbl.create 53
         "string", STRING;
         "true", TRUE;
         "false", FALSE;
+        "rows", ROWS;
+        "cols", COLS;
+        "mat_init", MAT_INIT;
       ]
 }
 
