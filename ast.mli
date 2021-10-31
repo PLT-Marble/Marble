@@ -3,6 +3,8 @@ type operator =
   | Sub
   | Mul
   | Div
+  | And
+  | Or
   | Eq
   | Neq
   | Less

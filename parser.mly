@@ -108,7 +108,10 @@ expr:
 | ID   { Id($1) }
 | ID LPAREN inputs RPAREN { Func($1,$3) }
 | LPAREN expr RPAREN { $2 }
-| MINUS expr      { Unary($2) }
+| MINUS expr       { Unary($2) }
+| NOT expr         { Negate($2) }  
+| expr AND expr    { Binop($1, And, $3) }
+| expr OR expr     { Binop($1, Or, $3) }
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }
 | expr TIMES expr  { Binop($1, Mult, $3) }
