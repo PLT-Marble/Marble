@@ -81,7 +81,7 @@ dtype:
 
 stmts: 
   /* nothing */  { [] }
-| stmt stmts { $1 :: $2 }
+| stmts stmt { $2 :: $1 }
 
 stmt:  
   expr SEMI { Expr ($1) }
