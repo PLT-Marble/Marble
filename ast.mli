@@ -1,3 +1,13 @@
+(*
+   Type checking / inference
+   or define str + int -> ???
+   1. parser throw compile time errors when seeing str  +int
+   2. don't throw error in parser, but throw runtime error
+
+  we have to do all the type checking in the run time (function return type???)
+
+*)
+
 type operator =
   | Add
   | Sub
