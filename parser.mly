@@ -20,11 +20,14 @@
 %token EOF
 
 %left IF THEN ELSE
+%left OR
+%left AND
 %right ASSIGN
 %left EQ NEQ REFEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
+%right NOT
 
 
 %start program
