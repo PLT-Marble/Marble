@@ -28,26 +28,22 @@ type expr =
   | Id of string
   | ILit of int
 
-type typ = 
+type dtype = 
   Int 
   | Bool 
   | Float 
   | Matrix
 
-type vdecl = typ * string
-
-type assignstmt = 
-    VDeAssign of typ * string * expr
-  | Assign of string * expr
+type vdecl = dtype * string
 
 type stmt =
   | Assign of string * expr
   | Expr of expr
   | Return of expr
   | VDeclare of vdecl
-  | AssignStmt of assignstmt
+  | VDeAssign of dtype * string * expr
 
-type bind = typ * string
+type bind = dtype * string
 
 type main = { stmts : stmt list }
 
@@ -85,15 +81,15 @@ let rec string_of_expr = function
 
 let rec string_of_stmt = function
   Expr(expr) -> string_of_expr expr ^ ";\n"
-| Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
-| Assign(v, e) -> v ^ " = " ^ string_of_expr e ^ ";\n"
-| VDeclare(t, id) -> string_of_typ t ^ " " ^ id ^ ";\n"
-| AssignStmt(_) -> ""
+| Return(expr) -> "return: " ^ string_of_expr expr ^ ";\n"
+| Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n"
+| VDeclare(t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
+| VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  "fdecl: " ^ fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_stmt fdecl.stmts) ^
   "}\n"
@@ -104,4 +100,4 @@ let string_of_decls (decls) =
 
 let string_of_program (program) = 
   (string_of_decls program.decls) ^ "\n" ^
-  String.concat "\n" (List.map string_of_stmt program.main.stmts)
+  "inside main: \n" ^ String.concat "\n" (List.map string_of_stmt program.main.stmts)

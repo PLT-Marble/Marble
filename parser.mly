@@ -90,19 +90,21 @@ stmt:
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
 // | FOR LPAREN assignstmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
 // | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
+| dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
+| ID ASSIGN expr SEMI { Assign($1, $3) }
 | vdecl { VDeclare($1) }
-| assignstmt SEMI { AssignStmt($1) }
+// | assignstmt SEMI { AssignStmt($1) }
+// | ID PLUSASSIGN expr { Assign($1, Binop($1, AddEq, $3)) }
+// | ID MINUSASSIGN expr { Assign($1, Binop($1, SubEq, $3)) }
 
 // elifstmts:
 //   /* nothing */  { [] }
 // | ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
 // int i = 0
 // for(i+=2; i<10; i++)
-assignstmt:
-  dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
-// | ID PLUSASSIGN expr { Assign($1, Binop($1, AddEq, $3)) }
-// | ID MINUSASSIGN expr { Assign($1, Binop($1, SubEq, $3)) }
-| ID ASSIGN expr { Assign($1, $3) }
+// assignstmt:
+  
+
 
 
 expr: 
