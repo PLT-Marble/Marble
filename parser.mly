@@ -11,7 +11,6 @@
 %token NULL
 %token INT FLOAT BOOLEAN MATRIX
 
-%token <int> INT
 %token <int> ILIT
 %token <float> FLIT
 %token <bool> TRUE FALSE
@@ -28,7 +27,6 @@
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %right NOT
-
 
 %start program
 %type <Ast.program> program
