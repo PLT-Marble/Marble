@@ -11,10 +11,9 @@
 %token NULL
 %token INT FLOAT BOOLEAN MATRIX
 
-%token <int> INT
 %token <int> ILIT
 %token <float> FLIT
-%token <bool> TRUE FALSE
+%token <bool> BLIT
 %token <string> SLIT
 %token <string> ID
 %token EOF
@@ -41,9 +40,9 @@ program: decls main EOF {{
 }}
 
 decls: 
-/* nothing */ { { vars = []; func = []; } }
-| decls vdecl { { vars = $2 :: $1.vars; func = $1.func; } }
-| decls fdecl { { vars = $1.vars; func = $2 :: $1.func; } }
+/* nothing */ { { vars = []; funcs = []; } }
+| decls vdecl { { vars = $2 :: $1.vars; funcs = $1.funcs; } }
+| decls fdecl { { vars = $1.vars; funcs = $2 :: $1.funcs; } }
 
 vdecl: dtype ID SEMI { $1, $2 }
 // int i;
@@ -86,54 +85,50 @@ stmts:
 stmt:  
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
-// hard to implement
-| BREAK SEMI { Break }
-| CONTINUE SEMI { Continue }
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
+// | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
+// | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
-| FOR LPAREN assignstmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
-| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
+// | FOR LPAREN assignstmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
+// | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
 | vdecl { VDeclare($1) }
 | assignstmt SEMI { AssignStmt($1) }
 
-elifstmts:
-  /* nothing */  { [] }
-| ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
+// elifstmts:
+//   /* nothing */  { [] }
+// | ELIF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts { Elif($3, $6, $8) }
 // int i = 0
 // for(i+=2; i<10; i++)
 assignstmt:
   dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
-| ID PLUSASSIGN expr { Assign($1, Binop($1, AddEq, $3)) }
-| ID MINUSASSIGN expr { Assign($1, Binop($1, SubEq, $3)) }
+// | ID PLUSASSIGN expr { Assign($1, Binop($1, AddEq, $3)) }
+// | ID MINUSASSIGN expr { Assign($1, Binop($1, SubEq, $3)) }
 | ID ASSIGN expr { Assign($1, $3) }
 
 
 expr: 
- ILIT  { iLit($1) }
-| FLIT { fLit($1) }
-| MLIT { mLit($1) }
-| TRUE { Bool(true) }
-| FALSE { Bool(false) }
+ ILIT  { ILit($1) }
+// | FLIT { fLit($1) }
+// | MLIT { mLit($1) }
+// | BLIT { bLit($1) }
 | ID   { Id($1) }
-| ID LPAREN inputs RPAREN { Func($1,$3) }
-| LPAREN expr RPAREN { $2 }
-| MINUS expr       { Unary($2) }
-| NOT expr         { Negate($2) }  
-| expr AND expr    { Binop($1, And, $3) }
-| expr OR expr     { Binop($1, Or, $3) }
+// | ID LPAREN inputs RPAREN { Func($1,$3) }
+// | LPAREN expr RPAREN { $2 }
+// | MINUS expr       { Unary($2) }
+// | NOT expr         { Negate($2) }  
+// | expr AND expr    { Binop($1, And, $3) }
+// | expr OR expr     { Binop($1, Or, $3) }
 | expr PLUS expr   { Binop($1, Add, $3) }
-| expr MINUS expr  { Binop($1, Sub, $3) }
-| expr TIMES expr  { Binop($1, Mult, $3) }
-| expr DIVIDE expr { Binop($1, Div, $3) }
-| expr MOD expr { Binop($1, Mod, $3) }
-| expr EQ expr  { Binop($1, Eq, $3) }
-| expr NEQ expr { Binop($1, Neq, $3) }
-| expr LT expr  { Binop($1, Less, $3) }
-| expr LEQ expr { Binop($1, Leq, $3) }
-| expr GT expr  { Binop($1, Greater, $3) }
-| expr GEQ expr { Binop($1, Geq, $3) }
-| expr REFEQ expr  { Binop($1, Req, $3) }
+// | expr MINUS expr  { Binop($1, Sub, $3) }
+// | expr TIMES expr  { Binop($1, Mult, $3) }
+// | expr DIVIDE expr { Binop($1, Div, $3) }
+// | expr MOD expr { Binop($1, Mod, $3) }
+// | expr EQ expr  { Binop($1, Eq, $3) }
+// | expr NEQ expr { Binop($1, Neq, $3) }
+// | expr LT expr  { Binop($1, Less, $3) }
+// | expr LEQ expr { Binop($1, Leq, $3) }
+// | expr GT expr  { Binop($1, Greater, $3) }
+// | expr GEQ expr { Binop($1, Geq, $3) }
+// | expr REFEQ expr  { Binop($1, Req, $3) }
 
 inputs:
   /* nothing */  { [] }

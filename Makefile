@@ -21,6 +21,10 @@ parser.ml parser.mli : parser.mly
 calc.out : calc ./test/calc.tb
 	./calc < ./test/calc.tb > test/calc.out
 
+marble.native :
+	opam config exec -- \
+	ocamlbuild -use-ocamlfind marble.native
+
 # Depedencies from ocamldep
 calc.cmo : scanner.cmo parser.cmi ast.cmi
 calc.cmx : scanner.cmx parser.cmx ast.cmi
