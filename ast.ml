@@ -27,6 +27,8 @@ type expr =
   | Binop of expr * operator * expr
   | Id of string
   | ILit of int
+  | FLit of float
+  | MLit of (expr list) list
 
 type dtype = 
   Int 
@@ -74,10 +76,15 @@ let string_of_op = function
   Add -> "+"
 
 let rec string_of_expr = function
-    ILit(l) -> string_of_int l
+    ILit(l) -> "<int>" ^ string_of_int l
+  | FLit(l) -> "<float>" ^ string_of_float l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | MLit(l) -> let string_of_row l =
+    String.concat ", " (List.map string_of_expr l)
+    in
+    String.concat "\n" (List.map string_of_row l)
 
 let rec string_of_stmt = function
   Expr(expr) -> string_of_expr expr ^ ";\n"

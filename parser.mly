@@ -15,6 +15,7 @@
 %token <float> FLIT
 %token <bool> BLIT
 %token <string> SLIT
+%token <string> MLIT
 %token <string> ID
 %token EOF
 
@@ -77,7 +78,6 @@ dtype:
 | FLOAT { Float }
 | MATRIX { Matrix }
 
-
 stmts: 
   /* nothing */  { [] }
 | stmts stmt { $2 :: $1 }
@@ -103,15 +103,12 @@ stmt:
 // int i = 0
 // for(i+=2; i<10; i++)
 // assignstmt:
-  
-
-
 
 expr: 
  ILIT  { ILit($1) }
 // | FLIT { fLit($1) }
-// | MLIT { mLit($1) }
 // | BLIT { bLit($1) }
+| matrix { MLit($1) }
 | ID   { Id($1) }
 // | ID LPAREN inputs RPAREN { Func($1,$3) }
 // | LPAREN expr RPAREN { $2 }
@@ -137,18 +134,16 @@ inputs:
 | expr           { [$1] }
 | expr COMMA inputs    { $1 :: $3 }
 
-MLIT: 
+matrix: 
   LBRACK matrix_row_list RBRACK { $2 }
 
 matrix_row_list:
-  matrix_row { [$1] }
+|  matrix_row { [$1] }
 | matrix_row SEMI matrix_row_list { $1 :: $3 }
 
 matrix_row: 
-  elements { $1 }
+| element { [$1] }
+| element COMMA matrix_row { $1 :: $3 }
 
-elements: 
-  element { [$1] }
-| element COMMA elements { $1 :: $3 }
-
-element: FLIT { $1 }
+element:
+  FLIT { FLit($1) }

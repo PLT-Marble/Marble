@@ -15,6 +15,7 @@ let keyword_table = Hashtbl.create 53
         "int", INT;
         "float", FLOAT;
         "boolean", BOOLEAN;
+        "matrix", MATRIX;
         "null", NULL;
       ]
 }
@@ -63,8 +64,8 @@ rule tokenize = parse
 | ';'        { SEMI }
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
-  { (*print_endline "scanner find id: ";
-    print_endline id; *)
+  { print_endline "scanner find id: ";
+    print_endline id;
     try
       Hashtbl.find keyword_table id
     with Not_found ->

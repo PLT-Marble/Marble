@@ -1,3 +1,9 @@
-find id: 
-foo
-6
+vdecl: int a;
+
+
+inside main: 
+Assign: a = 1;
+
+VDeAssign: intb2;
+
+return: a + b;
