@@ -108,9 +108,9 @@ assignstmt:
 
 
 expr: 
- ILIT  { iLit($1) }
-| FLIT { fLit($1) }
-| MLIT { mLit($1) }
+ ILIT  { ILit($1) }
+| FLIT { FLit($1) }
+| MLIT { MLit($1) }
 | TRUE { Bool(true) }
 | FALSE { Bool(false) }
 | ID   { Id($1) }
