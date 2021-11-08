@@ -24,11 +24,15 @@ type operator =
   | Req
 
 type expr =
+  | Ilit of int
+  | FLit of string
+  | Mlit of string
+  | Bool of bool
+  | Id of string
   | Binop of expr * operator * expr
-  | Var of string
-  | Assign of string * expr
-  | Seq of expr * expr
-  | Condition of expr * expr * expr
+  | Func of string * expr list
+  | Unary of expr
+  | Negate of expr
 
 type typ = Int | Bool | Float | Matrix
 
