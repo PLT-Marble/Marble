@@ -9,33 +9,20 @@
 *)
 open Ast
 
-type operator =
-  | Add
-  | Sub
-  | Mul
-  | Div
-  | And
-  | Or
-  | Eq
-  | Neq
-  | Less
-  | Leq
-  | Greater
-  | Geq
-  | Req
 
 type sexpr =
-  | Ilit of int
-  | FLit of string
-  | MLit of expr list
-  | Bool of bool
-  | Id of string
-  | Binop of expr * operator * expr
-  | Func of string * expr list
-  | Unary of expr
-  | Negate of expr
+  | SIlit of int
+  | SFLit of string
+  | SMLit of sexpr list
+  | SBool of bool
+  | SId of string
+  | SBinop of sexpr * operator * sexpr
+  | SFunc of string * sexpr list
+  | SUnary of sexpr
+  | SNegate of sexpr
 
-type typ = Int | Bool | Float | Matrix
+(*think might not need type *)
+type typ = Int | Bool | Float | Matrix 
 
 type selifstmts = SElif of sexpr * sstmt list * selifstmts
 
