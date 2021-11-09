@@ -22,22 +22,37 @@ type operator =
   | Greater
   | Geq
   | Req
+  | AddEq
+  | SubEq
 
 type expr =
+  | Ilit of int
+  | FLit of string
+  | MLit of expr list
+  | Bool of bool
+  | Id of string
   | Binop of expr * operator * expr
-  | Var of string
-  | Assign of string * expr
-  | Seq of expr * expr
-  | Condition of expr * expr * expr
+  | Func of string * expr list
+  | Unary of expr
+  | Negate of expr
 
 type typ = Int | Bool | Float | Matrix
+
+type elifstmts = Elif of expr * stmt list * elifstmts
+
+type assignstmt = 
+  | VDeAssign of typ * string * expr
+  | Assign of string * expr
 
 type stmt =
   | Expr of expr
   | Return of expr
-  | If of expr * stmt * stmt
-  | For of expr * expr * expr * stmt
-  | While of expr * stmt
+  | If of expr * stmt list * stmt list
+  | IfElse of expr * stmt list * elifstmts * stmt list 
+  | For of expr * expr * expr * stmt list
+  | While of expr * stmt list
+  | VDeclare of bind
+  | AssignStmt of assignstmt
 
 type bind = typ * string
 

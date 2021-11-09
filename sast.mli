@@ -9,36 +9,36 @@
 *)
 open Ast
 
-type operator =
-  | Add
-  | Sub
-  | Mul
-  | Div
-  | And
-  | Or
-  | Eq
-  | Neq
-  | Less
-  | Leq
-  | Greater
-  | Geq
-  | Req
 
-type expr =
-  | Binop of expr * operator * expr
-  | Var of string
-  | Assign of string * expr
-  | Seq of expr * expr
-  | Condition of expr * expr * expr
+type sexpr =
+  | SIlit of int
+  | SFLit of string
+  | SMLit of sexpr list
+  | SBool of bool
+  | SId of string
+  | SBinop of sexpr * operator * sexpr
+  | SFunc of string * sexpr list
+  | SUnary of sexpr
+  | SNegate of sexpr
 
-type typ = Int | Bool | Float | Matrix
+(*think might not need type *)
+type typ = Int | Bool | Float | Matrix 
+
+type selifstmts = SElif of sexpr * sstmt list * selifstmts
+
+type sassignstmt = 
+  | SVDeAssign of typ * string * sexpr
+  | SAssign of string * sexpr
 
 type sstmt =
-  | Expr of expr
-  | Return of expr
-  | If of expr * stmt * stmt
-  | For of expr * expr * expr * stmt
-  | While of expr * stmt
+  | SExpr of sexpr
+  | SReturn of sexpr
+  | SIf of sexpr * sstmt list * sstmt list
+  | SIfElse of sexpr * sstmt list * selifstmts * sstmt list 
+  | SFor of sexpr * sexpr * sexpr * sstmt list
+  | SWhile of sexpr * sstmt list
+  | SVDeclare of bind
+  | SAssignStmt of sassignstmt
 
 type sfdecl = { sfname : string; sformals : bind list; sstmts : sstmt list }
 
