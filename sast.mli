@@ -37,12 +37,21 @@ type sexpr =
 
 type typ = Int | Bool | Float | Matrix
 
+type selifstmts = SElif of sexpr * sstmt list * selifstmts
+
+type sassignstmt = 
+  | SVDeAssign of typ * string * sexpr
+  | SAssign of string * sexpr
+
 type sstmt =
-  | Expr of expr
-  | Return of expr
-  | If of expr * stmt * stmt
-  | For of expr * expr * expr * stmt
-  | While of expr * stmt
+  | SExpr of sexpr
+  | SReturn of sexpr
+  | SIf of sexpr * sstmt list * sstmt list
+  | SIfElse of sexpr * sstmt list * selifstmts * sstmt list 
+  | SFor of sexpr * sexpr * sexpr * sstmt list
+  | SWhile of sexpr * sstmt list
+  | SVDeclare of bind
+  | SAssignStmt of sassignstmt
 
 type sfdecl = { sfname : string; sformals : bind list; sstmts : sstmt list }
 
