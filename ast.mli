@@ -26,7 +26,7 @@ type operator =
 type expr =
   | Ilit of int
   | FLit of string
-  | Mlit of string
+  | MLit of expr list
   | Bool of bool
   | Id of string
   | Binop of expr * operator * expr
