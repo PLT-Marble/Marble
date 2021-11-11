@@ -1,19 +1,9 @@
-(*
-   Type checking / inference
-   or define str + int -> ???
-   1. parser throw compile time errors when seeing str  +int
-   2. don't throw error in parser, but throw runtime error
-
-  we have to do all the type checking in the run time (function return type???)
-
-*)
-
 type operator =
   | Add
-  (* | Sub
+  | Sub
   | Mul
   | Div
-  | And
+  (* | And
   | Or
   | Eq
   | Neq
@@ -28,13 +18,14 @@ type expr =
   | Id of string
   | ILit of int
   | FLit of float
-  | MLit of (expr list) list
+  (* | MLit of (expr list) list *)
 
 type dtype = 
   Int 
   | Bool 
   | Float 
   | Matrix
+  | Null
 
 type vdecl = dtype * string
 
@@ -71,20 +62,24 @@ let string_of_typ = function
   | Bool -> "bool"
   | Float -> "float"
   | Matrix -> "matrix"
+  | Null -> "null"
 
 let string_of_op = function
   Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+  | Div -> "/"
 
 let rec string_of_expr = function
-    ILit(l) -> "<int>" ^ string_of_int l
-  | FLit(l) -> "<float>" ^ string_of_float l
+    ILit(l) -> string_of_int l
+  | FLit(l) -> string_of_float l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
-  | MLit(l) -> let string_of_row l =
+  (* | MLit(l) -> let string_of_row l =
     String.concat ", " (List.map string_of_expr l)
     in
-    String.concat "\n" (List.map string_of_row l)
+    String.concat "\n" (List.map string_of_row l) *)
 
 let rec string_of_stmt = function
   Expr(expr) -> string_of_expr expr ^ ";\n"
