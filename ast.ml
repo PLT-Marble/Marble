@@ -35,6 +35,7 @@ type stmt =
   | Return of expr
   | VDeclare of vdecl
   | VDeAssign of dtype * string * expr
+  | Block of stmt list
 
 type bind = dtype * string
 
@@ -87,6 +88,7 @@ let rec string_of_stmt = function
 | Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n"
 | VDeclare(t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 | VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"
+| Block stmts -> "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
 
 let string_of_vdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 

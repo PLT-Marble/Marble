@@ -16,6 +16,7 @@ type sstmt =
   | SReturn of sexpr
   | SVDeclare of svdecl
   | SVDeAssign of dtype * string * sexpr
+  | SBlock of sstmt list
 
 type sbind = dtype * string
 
@@ -58,6 +59,8 @@ let rec string_of_sstmt = function
 | SAssign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
 | SVDeclare(t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 | SVDeAssign(t, id, sexpr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
+| SBlock(stmts) ->
+  "{\n" ^ String.concat "" (List.map string_of_sstmt stmts) ^ "}\n"
 
 let string_of_svdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 
