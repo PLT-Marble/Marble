@@ -14,7 +14,7 @@ type sexpr =
   | SIlit of int
   | SFLit of string
   | SMLit of sexpr list
-  | SBool of bool
+  | SBLit of bool
   | SId of string
   | SBinop of sexpr * operator * sexpr
   | SFunc of string * sexpr list
@@ -37,7 +37,7 @@ type sstmt =
   | SIfElse of sexpr * sstmt list * selifstmts * sstmt list 
   | SFor of sexpr * sexpr * sexpr * sstmt list
   | SWhile of sexpr * sstmt list
-  | SVDeclare of bind
+  | SVDeclare of typ * string
   | SAssignStmt of sassignstmt
 
 type sfdecl = { sfname : string; sformals : bind list; sstmts : sstmt list }
