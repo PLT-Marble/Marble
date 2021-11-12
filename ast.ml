@@ -24,16 +24,14 @@ type dtype =
   Int 
   | Bool 
   | Float 
-  | Matrix
+  (* | Matrix *)
   | Null
-
-type vdecl = dtype * string
 
 type stmt =
   | Assign of string * expr
   | Expr of expr
   | Return of expr
-  | VDeclare of vdecl
+  | VDeclare of dtype * string
   | VDeAssign of dtype * string * expr
   | Block of stmt list
 
@@ -62,7 +60,7 @@ let string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
   | Float -> "float"
-  | Matrix -> "matrix"
+  (* | Matrix -> "matrix" *)
   | Null -> "null"
 
 let string_of_op = function

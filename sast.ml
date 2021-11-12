@@ -8,13 +8,11 @@ and sx =
   | SFLit of float
   | SMLit of (sexpr list) list
 
-type svdecl = dtype * string
-
 type sstmt =
   | SAssign of string * sexpr
   | SExpr of sexpr
   | SReturn of sexpr
-  | SVDeclare of svdecl
+  | SVDeclare of dtype * string
   | SVDeAssign of dtype * string * sexpr
   | SBlock of sstmt list
 
