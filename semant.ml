@@ -43,7 +43,7 @@ let check (globals, functions) =
 
     in *)
 (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
-    let rec check_stmt stmt env = match stmt with
+    let rec check_stmt env stmt = match stmt with
         Expr e -> (SExpr (expr e env), env)
         | Return e -> let (t, e') = expr e env in (SReturn (t, e'), env)
         | VDeclare(t,s) ->  (SVDeclare(t, s), StringMap.add s t env)
@@ -63,7 +63,7 @@ let check (globals, functions) =
     {
         sfname = func.fname;
         sformals = func.formals;
-        sbody = List.map check_stmt func.stmts symbols
+        sbody = List.fold_left check_stmt symbols func.stmts
     }
 
 
