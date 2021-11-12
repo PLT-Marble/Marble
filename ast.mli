@@ -51,7 +51,7 @@ type stmt =
   | IfElse of expr * stmt list * elifstmts * stmt list 
   | For of expr * expr * expr * stmt list
   | While of expr * stmt list
-  | VDeclare of bind
+  | VDeclare of typ * string
   | AssignStmt of assignstmt
 
 type bind = typ * string

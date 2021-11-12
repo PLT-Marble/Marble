@@ -92,7 +92,7 @@ stmt:
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
 | FOR LPAREN assignstmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
 | WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
-| vdecl { VDeclare($1) }
+| dtype ID SEMI { VDeclare($1, $2) }
 | assignstmt SEMI { AssignStmt($1) }
 
 elifstmts:
