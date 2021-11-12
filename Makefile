@@ -6,4 +6,4 @@ marble.native :
 
 .PHONY : clean
 clean :
-	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc
+	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc ast.mli

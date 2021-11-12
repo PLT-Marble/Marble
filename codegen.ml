@@ -64,6 +64,7 @@ module StringMap = Map.Make(String)
             | A.Geq     -> L.build_icmp L.Icmp.Sge
             ) e1' e2' "tmp" builder
             (* Unary and Negate *)
+            (* Function call *)
             | SFunc (f, args) ->
                 let (fdef, fdecl) = StringMap.find f function_decls in
                     let llargs = (List.rev (List.map (expr builder) (List.rev args))) in
@@ -73,7 +74,7 @@ module StringMap = Map.Make(String)
                     L.build_call fdef (Array.of_list llargs) result builder
                 in
                 ignore(List.map (fun (_, _, v) -> expr builder v) fdecl.sformals);
-                ignore(List.map (fun (_, _, v) -> expr builder v) fdecl.slocals);
+                (* ignore(List.map (fun (_, _, v) -> expr builder v) fdecl.slocals); *)
 
 
 

@@ -70,7 +70,7 @@ dtype:
 | INT { Int }
 | BOOLEAN { Bool }
 | FLOAT { Float }
-| MATRIX { Matrix }
+// | MATRIX { Matrix }
 
 stmts: 
   /* nothing */  { [] }
@@ -133,16 +133,16 @@ inputs:
 | expr           { [$1] }
 | expr COMMA inputs    { $1 :: $3 }
 
-matrix: 
-  LBRACK matrix_row_list RBRACK { $2 }
+// matrix: 
+//   LBRACK matrix_row_list RBRACK { $2 }
 
-matrix_row_list:
-|  matrix_row { [$1] }
-| matrix_row SEMI matrix_row_list { $1 :: $3 }
+// matrix_row_list:
+// |  matrix_row { [$1] }
+// | matrix_row SEMI matrix_row_list { $1 :: $3 }
 
-matrix_row: 
-| element { [$1] }
-| element COMMA matrix_row { $1 :: $3 }
+// matrix_row: 
+// | element { [$1] }
+// | element COMMA matrix_row { $1 :: $3 }
 
-element:
-  FLIT { FLit($1) }
+// element:
+//   FLIT { FLit($1) }
