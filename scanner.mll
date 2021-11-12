@@ -9,24 +9,14 @@ let keyword_table = Hashtbl.create 53
         "else", ELSE;
         "for", FOR;
         "while", WHILE;
-        "break", BREAK;
-        "continue", CONTINUE;
         "main", MAIN;
-        "constructor", CONSTRUCTOR;
         "return", RETURN;
         "function", FUNCTION;
-        "class", CLASS;
-        "import", IMPORT;
         "int", INT;
         "float", FLOAT;
         "boolean", BOOLEAN;
+        "matrix", MATRIX;
         "null", NULL;
-        "string", STRING;
-        "true", TRUE;
-        "false", FALSE;
-        "rows", ROWS;
-        "cols", COLS;
-        "mat_init", MAT_INIT;
       ]
 }
 
@@ -34,7 +24,6 @@ let digit = ['0' - '9']
 let digits = digit+
 let float = digits '.' digits
 let quote = ['\'' '\"']
-let matrix = '[' ((digits,)* digits? ';')* ((digits,)* digits?)? ']'
 
 rule tokenize = parse
   [' ' '\t' '\r' '\n'] { tokenize lexbuf }
@@ -45,7 +34,7 @@ rule tokenize = parse
 | digits as lit { ILIT(int_of_string lit) }
 | float as lit { FLIT(float_of_string lit) }
 | '"' ([^ '"']* as lit) '"' { SLIT(lit) }
-| matrix as lit { MLIT(lit)}
+| ("true" "false") as lit { BLIT(bool_of_string lit) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
 | "+="       { PLUSASSIGN }
@@ -64,7 +53,6 @@ rule tokenize = parse
 | "!"        { NOT }
 | "&&"       { AND }
 | "||"       { OR }
-| '.'        { DOT }
 (* 2.7 seperators *)
 | '('        { LPAREN }
 | ')'        { RPAREN }
@@ -76,7 +64,7 @@ rule tokenize = parse
 | ';'        { SEMI }
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
-  { print_endline "find id: ";
+  { print_endline "scanner find id: ";
     print_endline id;
     try
       Hashtbl.find keyword_table id
