@@ -1,33 +1,37 @@
-(* Top-level of the MicroC compiler: scan & parse the input,
-   check the resulting AST and generate an SAST from it, generate LLVM IR,
-   and dump the module *)
+open Ast
+module StringMap = Map.Make (String)
 
-   type action = Ast | Sast | LLVM_IR | Compile
+let variables = ref StringMap.empty
 
-   let () =
-     let action = ref Compile in
-     let set_action a () = action := a in
-     let speclist = [
-       ("-a", Arg.Unit (set_action Ast), "Print the AST");
-       ("-s", Arg.Unit (set_action Sast), "Print the SAST");
-       ("-l", Arg.Unit (set_action LLVM_IR), "Print the generated LLVM IR");
-       ("-c", Arg.Unit (set_action Compile),
-         "Check and print the generated LLVM IR (default)");
-     ] in  
-     let usage_msg = "usage: ./microc.native [-a|-s|-l|-c] [file.mc]" in
-     let channel = ref stdin in
-     Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg;
-     
-     let lexbuf = Lexing.from_channel !channel in
-     let ast = Parser.program Scanner.tokenize lexbuf in  
-     match !action with
-       Ast -> print_string (Ast.string_of_program ast)
-     | _ -> let sast = Semant.check ast in
-       match !action with
-         Ast     -> ()
-       | Sast    -> print_string (Sast.string_of_sprogram sast)
-       | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate sast))
-       | Compile -> let m = Codegen.translate sast in
-     Llvm_analysis.assert_valid_module m;
-     print_string (Llvm.string_of_llmodule m)
-   
+let rec eval = function
+  | Lit x -> x
+  | Var x -> StringMap.find x !variables
+  | Binop (e1, op, e2) -> (
+      let v1 = eval e1 in
+      let v2 = eval e2 in
+      match op with
+      | Add -> v1 + v2
+      | Sub -> v1 - v2
+      | Mul -> v1 * v2
+      | Div -> v1 / v2)
+  | Assign (name, v) ->
+      let ev = eval v in
+      variables := StringMap.add name ev !variables;
+      ev
+  | Condition (e1, e2, e3) -> if eval e1 = 0 then eval e3 else eval e2
+  | Seq (x, y) ->
+      let _ = eval x in
+      eval y
+
+let _ =
+  let lexbuf = Lexing.from_channel stdin in
+  let expr = Parser.expr Scanner.tokenize lexbuf in
+  let result = eval expr in
+  print_endline (string_of_int result)
+
+(* debug
+   let _ =
+     let tuples = StringMap.fold (fun k v l -> (k, v) :: l) !variables [] in
+     List.iter (fun (k, v) ->
+       print_endline (k ^ " " ^ string_of_int v)) tuples
+*)

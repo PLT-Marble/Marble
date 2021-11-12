@@ -29,7 +29,6 @@
 %left TIMES DIVIDE MOD
 %right NOT
 
-
 %start program
 %type <Ast.program> program
 
