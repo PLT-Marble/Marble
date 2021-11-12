@@ -102,8 +102,8 @@ elifstmts:
 // for(i+=2; i<10; i++)
 assignstmt:
   dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
-| ID PLUSASSIGN expr { Assign($1, Binop($1, AddEq, $3)) }
-| ID MINUSASSIGN expr { Assign($1, Binop($1, SubEq, $3)) }
+| ID PLUSASSIGN expr { Assign($1, Binop($1, Add, $3)) }
+| ID MINUSASSIGN expr { Assign($1, Binop($1, Sub, $3)) }
 | ID ASSIGN expr { Assign($1, $3) }
 
 
@@ -111,8 +111,8 @@ expr:
  ILIT  { ILit($1) }
 | FLIT { FLit($1) }
 | MLIT { MLit($1) }
-| TRUE { Bool(true) }
-| FALSE { Bool(false) }
+| TRUE { BLit(true) }
+| FALSE { BLit(false) }
 | ID   { Id($1) }
 | ID LPAREN inputs RPAREN { Func($1,$3) }
 | LPAREN expr RPAREN { $2 }

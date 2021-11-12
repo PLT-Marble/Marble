@@ -14,7 +14,7 @@ type sexpr =
   | SIlit of int
   | SFLit of string
   | SMLit of sexpr list
-  | SBool of bool
+  | SBLit of bool
   | SId of string
   | SBinop of sexpr * operator * sexpr
   | SFunc of string * sexpr list

@@ -39,9 +39,64 @@ let check (globals, functions) =
     in
 
 (* Check exprs - Return a semantically-checked expression, i.e., with a type *)
-    (* let rec expr e env = match e with
+    let rec expr e env = match e with
+        Ilit l -> (Int, SIlit l)
+        | FLit l -> (Float, SFLit l)
+        | BLit l -> (Bool, SBLit l)
+        (* | MLit l ->  some matrix checking? *)
+        | Id s -> (type_of_identifier s, SId s)
+        | Binop (e1, op, e2) as e ->
+            let (tp1, c1) = expr e1 and (tp2, c2) = expr e2 in
+            (* check if two expr connected by binary op with same type *)
+            let same = (t1 = t2) in
+            (* Determine expression type based on operator and operand types *)
+            let ty = match op with
+              Add | Sub | Mult | Div when same && tp1 = Int   -> Int
+            | Add | Sub | Mult | Div when same && tp1 = Float -> Float
+            | Equal | Neq            when same               -> Bool
+            | Less | Leq | Greater | Geq
+                        when same && (tp1 = Int || tp1 = Float) -> Bool
+            | And | Or when same && tp1 = Bool -> Bool
+            (* REQ specified for nonpremitive type or matrix? *)
+            | _ -> raise (
+            Failure ("illegal binary operator " ^
+                        string_of_typ tp1 ^ " " ^ string_of_op op ^ " " ^
+                        string_of_typ tp2 ^ " in " ^ string_of_expr e))
+            in (ty, SBinop((tp1, c1), op, (tp2, c2)))
+        | Unary(op, e1) as e -> 
+            let (tp, c) = expr e1 in
+            let ty = match op with
+            t = Int || t = Float -> t
+            | _ -> raise (Failure ("illegal unary operator " ^ 
+                                    string_of_uop op ^ string_of_typ tp ^
+                                    " in " ^ string_of_expr e))
+            in (ty, SUnary(op, (tp, c)))
+        | Negate(op, e1) as e -> 
+            let (tp, c) = expr e1 in
+            let ty = match op with
+            t = Bool -> Bool
+            | _ -> raise (Failure ("illegal negate operator " ^ 
+                                    string_of_uop op ^ string_of_typ tp ^
+                                    " in " ^ string_of_expr e))
+            in (ty, SNegate(op, (tp, c)))
 
-    in *)
+        (* Incomplete function call part *)
+        | Func(fname, args) as call -> 
+            let fd = find_func fname in
+            let param_length = List.length fd.formals in
+            if List.length args != param_length then
+                raise (Failure ("expecting " ^ string_of_int param_length ^ 
+                                " arguments in " ^ string_of_expr call))
+            else let check_call (ft, _) e = 
+                let (et, e') = expr e in 
+                let err = "illegal argument found " ^ string_of_typ et ^
+                " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
+                in (check_assign ft et err, e')
+            in 
+            let fdFormals = List.map (fun (tp, vName, _) -> (tp, vName) ) fd.formals in
+            let args' = List.map2 check_call fdFormals args
+            in (fd.typ, SFunc(fname, args'))
+    in 
 (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
     let rec check_stmt env stmt = match stmt with
         Expr e -> (SExpr (expr e env), env)

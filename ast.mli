@@ -22,14 +22,12 @@ type operator =
   | Greater
   | Geq
   | Req
-  | AddEq
-  | SubEq
 
 type expr =
   | Ilit of int
   | FLit of string
   | MLit of expr list
-  | Bool of bool
+  | BLit of bool
   | Id of string
   | Binop of expr * operator * expr
   | Func of string * expr list
