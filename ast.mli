@@ -43,7 +43,7 @@ type assignstmt = VDeAssign of typ * string * expr | Assign of string * expr
 type stmt =
   | Expr of expr
   | Return of expr
-  | If of expr * stmt list * stmt list
+  (*| If of expr * stmt list * stmt list*)
   (* | IfElse of expr * stmt list * elifstmts * stmt list *)
   (* | For of expr * expr * expr * stmt list
      | While of expr * stmt list *)

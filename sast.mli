@@ -24,7 +24,7 @@ type sexpr =
 (*think might not need type *)
 type typ = Int | Bool | Float | Matrix 
 
-type selifstmts = SElif of sexpr * sstmt list * selifstmts
+(*type selifstmts = SElif of sexpr * sstmt list * selifstmts*)
 
 type sassignstmt = 
   | SVDeAssign of typ * string * sexpr
@@ -33,10 +33,10 @@ type sassignstmt =
 type sstmt =
   | SExpr of sexpr
   | SReturn of sexpr
-  | SIf of sexpr * sstmt list * sstmt list
+ (* | SIf of sexpr * sstmt list * sstmt list
   | SIfElse of sexpr * sstmt list * selifstmts * sstmt list 
   | SFor of sexpr * sexpr * sexpr * sstmt list
-  | SWhile of sexpr * sstmt list
+  | SWhile of sexpr * sstmt list*)
   | SVDeclare of typ * string
   | SAssignStmt of sassignstmt
 

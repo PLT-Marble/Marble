@@ -79,7 +79,6 @@ stmts:
 stmt:  
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
-| LBRACE stmts RBRACE { Block(List.rev $2) }
 // | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
 // | IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 // replace stmt with dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
@@ -128,10 +127,10 @@ expr:
 // | expr GEQ expr { Binop($1, Geq, $3) }
 // | expr REFEQ expr  { Binop($1, Req, $3) }
 
-inputs:
-  /* nothing */  { [] }
-| expr           { [$1] }
-| expr COMMA inputs    { $1 :: $3 }
+//inputs:
+//  /* nothing */  { [] }
+//| expr           { [$1] }
+//| expr COMMA inputs    { $1 :: $3 }
 
 // matrix: 
 //   LBRACK matrix_row_list RBRACK { $2 }
