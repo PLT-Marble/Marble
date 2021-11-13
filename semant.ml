@@ -9,8 +9,8 @@ module StringMap = Map.Make (String)
    Check each global variable, then check each function *)
 
 let check (program) =
-  let funcs = program.decls.funcs
-  in
+    let funcs = program.decls.funcs
+    in
   (* let check_vars loc stmt_lst =
     let add_decl lst = function
       | Expr e ->
@@ -37,69 +37,73 @@ let check (program) =
     | _ :: t -> dups t
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) binds)
   in *)
-  let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-  StringMap.empty (program.decls.vars)
-  in
-  (* Return a variable from our local symbol table *)
-  let type_of_identifier s =
-  try StringMap.find s symbols
-  with Not_found -> raise (Failure ("undeclared identifier " ^ s))
-  in
+    let check_assign lvaluet rvaluet err =
+        if lvaluet = rvaluet || (lvaluet==Float && rvaluet == Int) then lvaluet else raise (Failure err)
+    in  
+    let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
+    StringMap.empty (program.decls.vars)
+    in
+    (* Return a variable from our local symbol table *)
+    let type_of_identifier s =
+    try StringMap.find s symbols
+    with Not_found -> raise (Failure ("undeclared identifier " ^ s))
+    in
 
   (**** Check functions ****)
 
   (* Collect function declarations for built-in functions: no bodies *)
-  let built_in_decls = 
-    let add_bind map (name, ty) = StringMap.add name 
-    {
-      fname = name; 
-      formals = [(ty, "x")];
-      stmts = [] 
-    } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-			                         ("printbig", Int) ]
-  (* Add function name to symbol table *)
-  in
-  let add_func map fd =
-    let built_in_err = "function " ^ fd.fname ^ " may not be defined"
-    and dup_err = "duplicate function " ^ fd.fname
-    and make_err er = raise (Failure er)
-    and n = fd.fname (* Name of the function *) in
-    match fd with
-    (* No duplicate functions or redefinitions of built-ins *)
-    | _ when StringMap.mem n built_in_decls -> make_err built_in_err
-    | _ when StringMap.mem n map -> make_err dup_err
-    | _ -> StringMap.add n fd map
-  in
-  (* Collect all function names into one symbol table *)
-  let function_decls = List.fold_left add_func built_in_decls funcs in
-  let find_func fname =
-    try StringMap.find fname function_decls with
-    | Not_found -> raise (Failure ("Undeclared function " ^ fname))
-  in
-  let rec check_expr = function
-     Id n -> (type_of_identifier n, SId n)
-    | ILit l -> (Int, SILit l)
-    | FLit l -> (Float, SFLit l)
-    (* | MLit m -> SMLit m *)
-    | Binop(e1, op, e2) as e -> 
-      let (t1, e1') = check_expr e1 
-      and (t2, e2') = check_expr e2 in
-      (* All binary operators require operands of the same type *)
-      let same = t1 = t2 in
-      (* Determine expression type based on operator and operand types *)
-      let ty = match op with
-        Add | Sub | Mul | Div when same && t1 = Int   -> Int
-      | Add | Sub | Mul | Div when same && t1 = Float -> Float
-      | _ -> raise (
-	      Failure ("illegal binary operator " ^
-                       string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-                       string_of_typ t2 ^ " in " ^ string_of_expr e))
-          in (ty, SBinop((t1, e1'), op, (t2, e2')))
-  in
-  let rec check_stmt = function
+    let built_in_decls = 
+        let add_bind map (name, ty) = StringMap.add name 
+        {
+        fname = name; 
+        formals = [(ty, "x")];
+        stmts = [] 
+        } map
+        in List.fold_left add_bind StringMap.empty [ ("print", Int);
+                                        ("printb", Bool);
+                                        ("printf", Float);
+                                        ("printbig", Int) ]
+    (* Add function name to symbol table *)
+    in
+    let add_func map fd =
+        let built_in_err = "function " ^ fd.fname ^ " may not be defined"
+        and dup_err = "duplicate function " ^ fd.fname
+        and make_err er = raise (Failure er)
+        and n = fd.fname (* Name of the function *) in
+        match fd with
+        (* No duplicate functions or redefinitions of built-ins *)
+        | _ when StringMap.mem n built_in_decls -> make_err built_in_err
+        | _ when StringMap.mem n map -> make_err dup_err
+        | _ -> StringMap.add n fd map
+    in
+    (* Collect all function names into one symbol table *)
+    let function_decls = List.fold_left add_func built_in_decls funcs in
+    let find_func fname =
+        try StringMap.find fname function_decls with
+        | Not_found -> raise (Failure ("Undeclared function " ^ fname))
+    in
+    let rec check_expr = function
+        Id n -> (type_of_identifier n, SId n)
+        | ILit l -> (Int, SILit l)
+        | FLit l -> (Float, SFLit l)
+        (* | MLit m -> SMLit m *)
+        | Binop(e1, op, e2) as e -> 
+        let (t1, e1') = check_expr e1 
+        and (t2, e2') = check_expr e2 in
+        (* All binary operators require operands of the same type *)
+        let same = t1 = t2 in
+        (* Determine expression type based on operator and operand types *)
+        let ty = match op with
+            Add | Sub | Mul | Div when same && t1 = Int   -> Int
+        | Add | Sub | Mul | Div when same && t1 = Float -> Float
+        | _ -> raise (
+            Failure ("illegal binary operator " ^
+                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+                        string_of_typ t2 ^ " in " ^ string_of_expr e))
+            in (ty, SBinop((t1, e1'), op, (t2, e2')))
+    in
+
+  (*let rec check_stmt = function
     | Assign (n, e) -> SAssign (n, check_expr e)
     | Expr e -> SExpr (check_expr e)
     | Block bl -> SBlock (check_stmt_list bl)
@@ -112,25 +116,46 @@ let check (program) =
     | Block sl :: ss -> check_stmt_list (sl @ ss)
     | s :: ss -> check_stmt s :: check_stmt_list ss
     | [] -> []
-  in
-  let check_decls vars funcs = 
-    let check_function func =      
-    { 
-      sfname = func.fname; 
-      sformals = func.formals; 
-      sstmts = check_stmt_list func.stmts 
-    }
-    in 
+  in*)
+
+    (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
+    let rec check_stmt env stmt = match stmt with
+        Expr e -> (SExpr (expr e env), env)
+        | Return e -> let (t, e') = expr e env in (SReturn (t, e'), env)
+        | VDeclare(t,s) ->  (SVDeclare(t, s), StringMap.add s t env)
+        | AssignStmt astmt -> match astmt with
+                                VDeAssign(t,s,e) ->  
+                                    let (t', e') = expr e env in
+                                    let decl_type = check_assign t t' "Type not correct" in
+                                    (SVDeAssign(t, s, expr e env), StringMap.add s decl_type env)
+                                | Assign(s,e) -> 
+                                    let left_typ = type_of_identifier s env
+                                    and (right_typ, e') = expr e env in
+                                    let error = "Illegal assignment!"
+                                    in (check_assign left_typ right_typ error, (SAssign(s, (right_typ, e')), env))
+
+
+    in
+    let check_decls vars funcs = 
+        let check_function func =      
+        { 
+            sfname = func.fname; 
+            sformals = func.formals; 
+            sstmts = List.fold_left check_stmt symbols func.stmts
+            (*sstmts = check_stmt_list func.stmts *)
+        }
+        in 
+        {
+            svars = vars;
+            sfuncs = List.map check_function funcs;
+        }  
+    in
     {
-      svars = vars;
-      sfuncs = List.map check_function funcs;
-    }  
-  in
-  {
-    sdecls = check_decls program.decls.vars program.decls.funcs;
-    smain = { sstmts = check_stmt_list program.main.stmts }
-  } 
-;;
+        sdecls = check_decls program.decls.vars program.decls.funcs;
+        smain = { sstmts = List.fold_left check_stmt symbols program.main.stmts }
+        (*smain = { sstmts = check_stmt_list program.main.stmts }*)
+    } 
+    ;;
 
 
 (* 
