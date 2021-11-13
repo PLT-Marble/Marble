@@ -25,23 +25,18 @@
 
   16  stmt : expr SEMI
   17       | RETURN expr SEMI
-  18       | LBRACE stmts RBRACE
-  19       | dtype ID SEMI
-  20       | assignstmt SEMI
+  18       | dtype ID SEMI
+  19       | assignstmt SEMI
 
-  21  assignstmt : dtype ID ASSIGN expr
-  22             | ID PLUSASSIGN expr
-  23             | ID MINUSASSIGN expr
-  24             | ID ASSIGN expr
+  20  assignstmt : dtype ID ASSIGN expr
+  21             | ID PLUSASSIGN expr
+  22             | ID MINUSASSIGN expr
+  23             | ID ASSIGN expr
 
-  25  expr : ILIT
-  26       | expr PLUS expr
+  24  expr : ILIT
+  25       | expr PLUS expr
 
-  27  inputs :
-  28         | expr
-  29         | expr COMMA inputs
-
-  30  %entry% : '\001' program
+  26  %entry% : '\001' program
 
 state 0
 	$accept : . %entry% $end  (0)
@@ -53,7 +48,7 @@ state 0
 
 
 state 1
-	%entry% : '\001' . program  (30)
+	%entry% : '\001' . program  (26)
 	decls : .  (2)
 
 	.  reduce 2
@@ -69,9 +64,9 @@ state 2
 
 
 state 3
-	%entry% : '\001' program .  (30)
+	%entry% : '\001' program .  (26)
 
-	.  reduce 30
+	.  reduce 26
 
 
 state 4
@@ -233,20 +228,19 @@ state 24
 	main : MAIN LPAREN RPAREN LBRACE stmts . RBRACE  (7)
 	stmts : stmts . stmt  (15)
 
-	LBRACE  shift 28
-	RBRACE  shift 29
-	RETURN  shift 30
+	RBRACE  shift 28
+	RETURN  shift 29
 	INT  shift 7
 	FLOAT  shift 8
 	BOOLEAN  shift 9
-	ILIT  shift 31
-	ID  shift 32
+	ILIT  shift 30
+	ID  shift 31
 	.  error
 
-	dtype  goto 33
-	stmt  goto 34
-	expr  goto 35
-	assignstmt  goto 36
+	dtype  goto 32
+	stmt  goto 33
+	expr  goto 34
+	assignstmt  goto 35
 
 
 state 25
@@ -258,7 +252,7 @@ state 25
 state 26
 	fdecl : FUNCTION ID LPAREN formals RPAREN . LBRACE stmts RBRACE  (6)
 
-	LBRACE  shift 37
+	LBRACE  shift 36
 	.  error
 
 
@@ -270,285 +264,243 @@ state 27
 	BOOLEAN  shift 9
 	.  error
 
-	dtype  goto 38
+	dtype  goto 37
 
 
 state 28
-	stmt : LBRACE . stmts RBRACE  (18)
-	stmts : .  (14)
-
-	.  reduce 14
-
-	stmts  goto 39
-
-
-state 29
 	main : MAIN LPAREN RPAREN LBRACE stmts RBRACE .  (7)
 
 	.  reduce 7
 
 
-state 30
+state 29
 	stmt : RETURN . expr SEMI  (17)
 
-	ILIT  shift 31
+	ILIT  shift 30
 	.  error
 
-	expr  goto 40
+	expr  goto 38
+
+
+state 30
+	expr : ILIT .  (24)
+
+	.  reduce 24
 
 
 state 31
-	expr : ILIT .  (25)
+	assignstmt : ID . PLUSASSIGN expr  (21)
+	assignstmt : ID . MINUSASSIGN expr  (22)
+	assignstmt : ID . ASSIGN expr  (23)
 
-	.  reduce 25
+	ASSIGN  shift 39
+	PLUSASSIGN  shift 40
+	MINUSASSIGN  shift 41
+	.  error
 
 
 state 32
-	assignstmt : ID . PLUSASSIGN expr  (22)
-	assignstmt : ID . MINUSASSIGN expr  (23)
-	assignstmt : ID . ASSIGN expr  (24)
+	stmt : dtype . ID SEMI  (18)
+	assignstmt : dtype . ID ASSIGN expr  (20)
 
-	ASSIGN  shift 41
-	PLUSASSIGN  shift 42
-	MINUSASSIGN  shift 43
+	ID  shift 42
 	.  error
 
 
 state 33
-	stmt : dtype . ID SEMI  (19)
-	assignstmt : dtype . ID ASSIGN expr  (21)
-
-	ID  shift 44
-	.  error
-
-
-state 34
 	stmts : stmts stmt .  (15)
 
 	.  reduce 15
 
 
-state 35
+state 34
 	stmt : expr . SEMI  (16)
-	expr : expr . PLUS expr  (26)
+	expr : expr . PLUS expr  (25)
 
-	PLUS  shift 45
-	SEMI  shift 46
+	PLUS  shift 43
+	SEMI  shift 44
+	.  error
+
+
+state 35
+	stmt : assignstmt . SEMI  (19)
+
+	SEMI  shift 45
 	.  error
 
 
 state 36
-	stmt : assignstmt . SEMI  (20)
-
-	SEMI  shift 47
-	.  error
-
-
-state 37
 	fdecl : FUNCTION ID LPAREN formals RPAREN LBRACE . stmts RBRACE  (6)
 	stmts : .  (14)
 
 	.  reduce 14
 
-	stmts  goto 48
+	stmts  goto 46
+
+
+state 37
+	formals : formals COMMA dtype . ID  (10)
+
+	ID  shift 47
+	.  error
 
 
 state 38
-	formals : formals COMMA dtype . ID  (10)
+	stmt : RETURN expr . SEMI  (17)
+	expr : expr . PLUS expr  (25)
 
-	ID  shift 49
+	PLUS  shift 43
+	SEMI  shift 48
 	.  error
 
 
 state 39
-	stmts : stmts . stmt  (15)
-	stmt : LBRACE stmts . RBRACE  (18)
+	assignstmt : ID ASSIGN . expr  (23)
 
-	LBRACE  shift 28
-	RBRACE  shift 50
-	RETURN  shift 30
-	INT  shift 7
-	FLOAT  shift 8
-	BOOLEAN  shift 9
-	ILIT  shift 31
-	ID  shift 32
+	ILIT  shift 30
 	.  error
 
-	dtype  goto 33
-	stmt  goto 34
-	expr  goto 35
-	assignstmt  goto 36
+	expr  goto 49
 
 
 state 40
-	stmt : RETURN expr . SEMI  (17)
-	expr : expr . PLUS expr  (26)
+	assignstmt : ID PLUSASSIGN . expr  (21)
 
-	PLUS  shift 45
-	SEMI  shift 51
+	ILIT  shift 30
 	.  error
+
+	expr  goto 50
 
 
 state 41
-	assignstmt : ID ASSIGN . expr  (24)
+	assignstmt : ID MINUSASSIGN . expr  (22)
 
-	ILIT  shift 31
+	ILIT  shift 30
 	.  error
 
-	expr  goto 52
+	expr  goto 51
 
 
 state 42
-	assignstmt : ID PLUSASSIGN . expr  (22)
+	stmt : dtype ID . SEMI  (18)
+	assignstmt : dtype ID . ASSIGN expr  (20)
 
-	ILIT  shift 31
+	ASSIGN  shift 52
+	SEMI  shift 53
 	.  error
-
-	expr  goto 53
 
 
 state 43
-	assignstmt : ID MINUSASSIGN . expr  (23)
+	expr : expr PLUS . expr  (25)
 
-	ILIT  shift 31
+	ILIT  shift 30
 	.  error
 
 	expr  goto 54
 
 
 state 44
-	stmt : dtype ID . SEMI  (19)
-	assignstmt : dtype ID . ASSIGN expr  (21)
-
-	ASSIGN  shift 55
-	SEMI  shift 56
-	.  error
-
-
-state 45
-	expr : expr PLUS . expr  (26)
-
-	ILIT  shift 31
-	.  error
-
-	expr  goto 57
-
-
-state 46
 	stmt : expr SEMI .  (16)
 
 	.  reduce 16
 
 
-state 47
-	stmt : assignstmt SEMI .  (20)
+state 45
+	stmt : assignstmt SEMI .  (19)
 
-	.  reduce 20
+	.  reduce 19
 
 
-state 48
+state 46
 	fdecl : FUNCTION ID LPAREN formals RPAREN LBRACE stmts . RBRACE  (6)
 	stmts : stmts . stmt  (15)
 
-	LBRACE  shift 28
-	RBRACE  shift 58
-	RETURN  shift 30
+	RBRACE  shift 55
+	RETURN  shift 29
 	INT  shift 7
 	FLOAT  shift 8
 	BOOLEAN  shift 9
-	ILIT  shift 31
-	ID  shift 32
+	ILIT  shift 30
+	ID  shift 31
 	.  error
 
-	dtype  goto 33
-	stmt  goto 34
-	expr  goto 35
-	assignstmt  goto 36
+	dtype  goto 32
+	stmt  goto 33
+	expr  goto 34
+	assignstmt  goto 35
 
 
-state 49
+state 47
 	formals : formals COMMA dtype ID .  (10)
 
 	.  reduce 10
 
 
-state 50
-	stmt : LBRACE stmts RBRACE .  (18)
-
-	.  reduce 18
-
-
-state 51
+state 48
 	stmt : RETURN expr SEMI .  (17)
 
 	.  reduce 17
 
 
-state 52
-	assignstmt : ID ASSIGN expr .  (24)
-	expr : expr . PLUS expr  (26)
+state 49
+	assignstmt : ID ASSIGN expr .  (23)
+	expr : expr . PLUS expr  (25)
 
-	PLUS  shift 45
-	SEMI  reduce 24
-
-
-state 53
-	assignstmt : ID PLUSASSIGN expr .  (22)
-	expr : expr . PLUS expr  (26)
-
-	PLUS  shift 45
-	SEMI  reduce 22
-
-
-state 54
-	assignstmt : ID MINUSASSIGN expr .  (23)
-	expr : expr . PLUS expr  (26)
-
-	PLUS  shift 45
+	PLUS  shift 43
 	SEMI  reduce 23
 
 
-state 55
-	assignstmt : dtype ID ASSIGN . expr  (21)
+state 50
+	assignstmt : ID PLUSASSIGN expr .  (21)
+	expr : expr . PLUS expr  (25)
 
-	ILIT  shift 31
+	PLUS  shift 43
+	SEMI  reduce 21
+
+
+state 51
+	assignstmt : ID MINUSASSIGN expr .  (22)
+	expr : expr . PLUS expr  (25)
+
+	PLUS  shift 43
+	SEMI  reduce 22
+
+
+state 52
+	assignstmt : dtype ID ASSIGN . expr  (20)
+
+	ILIT  shift 30
 	.  error
 
-	expr  goto 59
+	expr  goto 56
 
 
-state 56
-	stmt : dtype ID SEMI .  (19)
+state 53
+	stmt : dtype ID SEMI .  (18)
 
-	.  reduce 19
-
-
-state 57
-	expr : expr . PLUS expr  (26)
-	expr : expr PLUS expr .  (26)
-
-	.  reduce 26
+	.  reduce 18
 
 
-state 58
+state 54
+	expr : expr . PLUS expr  (25)
+	expr : expr PLUS expr .  (25)
+
+	.  reduce 25
+
+
+state 55
 	fdecl : FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE .  (6)
 
 	.  reduce 6
 
 
-state 59
-	assignstmt : dtype ID ASSIGN expr .  (21)
-	expr : expr . PLUS expr  (26)
+state 56
+	assignstmt : dtype ID ASSIGN expr .  (20)
+	expr : expr . PLUS expr  (25)
 
-	PLUS  shift 45
-	SEMI  reduce 21
-
-
-Rules never reduced:
-	inputs :  (27)
-	inputs : expr  (28)
-	inputs : expr COMMA inputs  (29)
+	PLUS  shift 43
+	SEMI  reduce 20
 
 
-52 terminals, 14 nonterminals
-31 grammar rules, 60 states
+52 terminals, 13 nonterminals
+27 grammar rules, 57 states

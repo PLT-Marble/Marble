@@ -56,6 +56,6 @@ type fdecl = { fname : string; formals : bind list; stmts : stmt list }
 
 type main = { stmts : stmt list }
 
-type decls = { vars : bind list; func : fdecl list }
+type decls = { vars : bind list; funcs : fdecl list }
 
 type program = { decls : decls; main : main }

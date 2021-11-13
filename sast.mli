@@ -9,7 +9,6 @@
 *)
 open Ast
 
-
 type sexpr =
   | SIlit of int
   | SFLit of string
@@ -22,21 +21,21 @@ type sexpr =
   | SNegate of sexpr
 
 (*think might not need type *)
-type typ = Int | Bool | Float | Matrix 
+type typ = Int | Bool | Float | Matrix
 
 (*type selifstmts = SElif of sexpr * sstmt list * selifstmts*)
 
-type sassignstmt = 
+type sassignstmt =
   | SVDeAssign of typ * string * sexpr
   | SAssign of string * sexpr
 
 type sstmt =
   | SExpr of sexpr
   | SReturn of sexpr
- (* | SIf of sexpr * sstmt list * sstmt list
-  | SIfElse of sexpr * sstmt list * selifstmts * sstmt list 
-  | SFor of sexpr * sexpr * sexpr * sstmt list
-  | SWhile of sexpr * sstmt list*)
+  (* | SIf of sexpr * sstmt list * sstmt list
+     | SIfElse of sexpr * sstmt list * selifstmts * sstmt list
+     | SFor of sexpr * sexpr * sexpr * sstmt list
+     | SWhile of sexpr * sstmt list*)
   | SVDeclare of typ * string
   | SAssignStmt of sassignstmt
 
@@ -44,6 +43,6 @@ type sfdecl = { sfname : string; sformals : bind list; sstmts : sstmt list }
 
 type smain = { sstmts : sstmt list }
 
-type sdecls = { svars : bind list; sfunc : sfdecl list }
+type sdecls = { svars : bind list; sfuncs : sfdecl list }
 
 type sprogram = { sdecls : sdecls; smain : smain }

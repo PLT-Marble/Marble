@@ -39,8 +39,10 @@ program: decls main EOF {{
     main = $2; 
 }}
 
+
+
 decls: 
-/* nothing */ { { vars = []; funcs = []; } }
+|/* nothing */ { { vars = []; funcs = []; } }
 | decls vdecl { { vars = $2 :: $1.vars; funcs = $1.funcs; } }
 | decls fdecl { { vars = $1.vars; funcs = $2 :: $1.funcs; } }
 
