@@ -1,3 +1,4 @@
 main(){
-    print("a");
+    print(10086);
+    return 0;
 }

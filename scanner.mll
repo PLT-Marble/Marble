@@ -4,18 +4,11 @@
 let keyword_table = Hashtbl.create 53
   let _ =
     List.iter (fun (kwd, tok) -> Hashtbl.add keyword_table kwd tok)
-      [ "if", IF;
-        "elif", ELIF;
-        "else", ELSE;
-        "for", FOR;
-        "while", WHILE;
+      [        
         "main", MAIN;
         "return", RETURN;
         "function", FUNCTION;
         "int", INT;
-        "float", FLOAT;
-        "boolean", BOOLEAN;
-        "matrix", MATRIX;
         "null", NULL;
       ]
 }
@@ -32,27 +25,12 @@ rule tokenize = parse
 | "/*" { comments lexbuf }
 (* 2.1 types *)
 | digits as lit { ILIT(int_of_string lit) }
-| float as lit { FLIT(float_of_string lit) }
-| '"' ([^ '"']* as lit) '"' { SLIT(lit) }
-| ("true" "false") as lit { BLIT(bool_of_string lit) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
-| "+="       { PLUSASSIGN }
-| "-="       { MINUSASSIGN }
 | '+'        { PLUS } 
 | '-'        { MINUS }
 | '*'        { TIMES }
 | '/'        { DIVIDE }
-| '%'        { MOD }
-| "=="       { EQ }
-| "!="       { NEQ }
-| '<'        { LT }
-| "<="       { LEQ }
-| ">"        { GT }
-| ">="       { GEQ }
-| "!"        { NOT }
-| "&&"       { AND }
-| "||"       { OR }
 (* 2.7 seperators *)
 | '('        { LPAREN }
 | ')'        { RPAREN }
@@ -64,8 +42,8 @@ rule tokenize = parse
 | ';'        { SEMI }
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
-  { print_endline "scanner find id: ";
-    print_endline id;
+  { (*print_endline "scanner find id: ";
+    print_endline id;*)
     try
       Hashtbl.find keyword_table id
     with Not_found ->
