@@ -1,7 +1,7 @@
 all : marble.native
 
 .PHONY : test
-test : all testall.sh
+test : clean all testall.sh
 	./testall.sh
 
 marble.native :
@@ -10,4 +10,4 @@ marble.native :
 
 .PHONY : clean
 clean :
-	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc
+	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml *.ll _build *.native
