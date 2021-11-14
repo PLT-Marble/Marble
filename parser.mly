@@ -62,8 +62,12 @@ stmt:
   expr SEMI { Expr ($1) }
 | RETURN expr SEMI { Return ($2) }
 | dtype ID SEMI { VDeclare($1, $2) }
-| dtype ID ASSIGN expr SEMI { VDeAssign($1, $2, $4) }
-| ID ASSIGN expr SEMI { Assign($1, $3) }
+| assignstmt SEMI { AssignStmt($1) }
+
+assignstmt:
+  dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
+| ID ASSIGN expr { Assign($1, $3) }
+
 
 expr: 
  ILIT  { ILit($1) }

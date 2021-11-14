@@ -7,15 +7,17 @@
 
 # Path to the LLVM interpreter
 LLI="lli"
-#LLI="/usr/local/opt/llvm/bin/lli"
+#LLI="/usr/local/opt/llvm@11/bin/lli"
 
 # Path to the LLVM compiler
 LLC="llc"
+#LLC="/usr/local/opt/llvm@11/bin/lli"
 
 # Path to the C compiler
 CC="cc"
 
-MARBLE="./marble.native"
+MARBLE="_build/marble.native"
+#"_build/matrixmania.native"
 
 # Set time limit for all operations
 ulimit -t 30

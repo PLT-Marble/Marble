@@ -7,12 +7,15 @@ and sx =
   | SILit of int
   | SFunc of string * (sexpr list)
 
-type sstmt =
+type sassignstmt =
+  | SVDeAssign of dtype * string * sexpr
   | SAssign of string * sexpr
+
+type sstmt =
   | SExpr of sexpr
   | SReturn of sexpr
   | SVDeclare of dtype * string
-  | SVDeAssign of dtype * string * sexpr
+  | SAssignStmt of sassignstmt
 
 type sbind = dtype * string
 
@@ -45,12 +48,15 @@ let rec string_of_sexpr (t, e) =
   | SFunc(id, inputs) -> id ^ "(" ^ String.concat ", " (List.map string_of_sexpr inputs) ^";\n"
   ) ^ ")"
 
+let rec string_of_sassignstmt = function
+  SAssign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
+  | SVDeAssign(t, id, sexpr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
+
 let rec string_of_sstmt = function
   SExpr(sexpr) -> string_of_sexpr sexpr ^ ";\n"
 | SReturn(sexpr) -> "return: " ^ string_of_sexpr sexpr ^ ";\n"
-| SAssign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
+| SAssignStmt(sassignstmt) -> string_of_sassignstmt sassignstmt
 | SVDeclare(t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
-| SVDeAssign(t, id, sexpr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
 
 let string_of_svdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 

@@ -14,12 +14,15 @@ type dtype =
   Int
   | Null
 
-type stmt =
+type assignstmt = 
+  VDeAssign of dtype * string * expr 
   | Assign of string * expr
+
+type stmt =
   | Expr of expr
   | Return of expr
   | VDeclare of dtype * string
-  | VDeAssign of dtype * string * expr
+  | AssignStmt of assignstmt
 
 type bind = dtype * string
 
@@ -59,13 +62,17 @@ let rec string_of_expr = function
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Func(id, inputs) -> id ^ "(" ^ String.concat ", " (List.map string_of_expr inputs) ^";\n"
 
+let rec string_of_assignstmt = function
+  VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"
+  | Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n" 
 
 let rec string_of_stmt = function
   Expr(expr) -> string_of_expr expr ^ ";\n"
 | Return(expr) -> "return: " ^ string_of_expr expr ^ ";\n"
-| Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n"
+| AssignStmt(assignstmt) -> string_of_assignstmt assignstmt
+(* | Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n" *)
 | VDeclare(t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
-| VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"
+(*| VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"*)
 
 let string_of_vdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 
