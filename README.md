@@ -1,5 +1,12 @@
 # Marble
 
+## System dependencies
+1. Ocaml 4.13
+2. Install OCaml LLVM bindings (llvm-9)
+3. Install LLVM (lli 6.0 working under ubuntu 18.04)
+
+## How to run helloworld
+1. Under project root directory, run `make test`
 
 ## Hello World project
 Steps: AST, SAST -> Semant -> CodeGen
