@@ -10,6 +10,10 @@ let keyword_table = Hashtbl.create 53
         "function", FUNCTION;
         "int", INT;
         "null", NULL;
+        "while", WHILE;
+        "for", FOR;
+        "if", IF;
+        "else", ELSE;
       ]
 }
 

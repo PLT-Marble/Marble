@@ -3,6 +3,8 @@
 %token PLUS MINUS TIMES DIVIDE
 %token ASSIGN 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE COMMA SEMI
+%token IF ELIF ELSE
+%token WHILE FOR
 %token RETURN MAIN FUNCTION
 %token NULL
 %token INT
@@ -11,6 +13,7 @@
 %token <string> ID
 %token EOF
 
+%left IF THEN ELSE
 %right ASSIGN
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
@@ -63,10 +66,25 @@ stmt:
 | RETURN expr SEMI { Return ($2) }
 | dtype ID SEMI { VDeclare($1, $2) }
 | assignstmt SEMI { AssignStmt($1) }
+| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
+| FOR LPAREN assignstmt SEMI expr SEMI expr RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE {If($3, $6)}
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE {IfElse($3, $6, $10)} 
+//| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts {If($3, $6, $8)}
+//| IF LPAREN expr RPAREN LBRACE stmts RBRACE elifstmts ELSE LBRACE stmts RBRACE {IfElse($3, $6, $8, $11)} 
 
 assignstmt:
   dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
 | ID ASSIGN expr { Assign($1, $3) }
+
+//elifstmts:
+//   /* nothing */  { [] }
+// | elifstmts elifstmt {$2 :: $1}
+
+//elifstmt:
+//| ELIF LPAREN expr RPAREN LBRACE stmts RBRACE { Elif($3, $6) }
+// int i = 0
+// for(i+=2; i<10; i++)
 
 
 expr: 
