@@ -5,6 +5,7 @@ and sx =
   | SBinop of sexpr * operator * sexpr
   | SId of string
   | SILit of int
+  | SFLit of float
   | SFunc of string * (sexpr list)
 
 type sassignstmt =
@@ -42,6 +43,7 @@ type sprogram = {
 let rec string_of_sexpr (t, e) = 
   "(" ^ string_of_typ t ^ " : " ^ (match e with
     SILit(l) -> string_of_int l
+  | SFLit(l) -> string_of_float l
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

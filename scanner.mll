@@ -9,6 +9,7 @@ let keyword_table = Hashtbl.create 53
         "return", RETURN;
         "function", FUNCTION;
         "int", INT;
+        "float", FLOAT;
         "null", NULL;
       ]
 }
@@ -25,6 +26,7 @@ rule tokenize = parse
 | "/*" { comments lexbuf }
 (* 2.1 types *)
 | digits as lit { ILIT(int_of_string lit) }
+| float as lit { FLIT(float_of_string lit)  }
 (* 2.6 operators *)
 | '='        { ASSIGN }
 | '+'        { PLUS } 

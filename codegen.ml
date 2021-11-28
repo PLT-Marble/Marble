@@ -40,6 +40,7 @@ let translate (program) =
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
       A.Int   -> i32_t
+    | A.Float -> float_t
     | A.Null  -> void_t
   in
 
@@ -134,6 +135,7 @@ let translate (program) =
     let rec expr builder ((_, e) : sexpr) =
       match e with
       | SILit i -> L.const_int i32_t i
+      | SFLit f -> L.const_float float_t f
       (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
       (* Matrix | SMatrixLit (contents, rows, cols) -> *)
