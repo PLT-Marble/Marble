@@ -20,3 +20,4 @@ Steps: AST, SAST -> Semant -> CodeGen
 ## Submission
 Email over the weekend; instruction to run it
 
+Forbid push to main
