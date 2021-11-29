@@ -18,6 +18,8 @@ type dtype =
   | Bool
   | Null
 
+(*type elifstmt = Elif of expr * stmt list*)
+
 type assignstmt = 
   VDeAssign of dtype * string * expr 
   | Assign of string * expr
@@ -27,6 +29,10 @@ type stmt =
   | Return of expr
   | VDeclare of dtype * string
   | AssignStmt of assignstmt
+  | If of expr * stmt list
+  | IfElse of expr * stmt list * stmt list 
+  | For of assignstmt * expr * expr * stmt list
+  | While of expr * stmt list
 
 type bind = dtype * string
 

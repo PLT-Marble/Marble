@@ -9,6 +9,8 @@ and sx =
   | SBLit of bool
   | SFunc of string * (sexpr list)
 
+(*type selifstmt = SElif of sexpr * sstmt list*)
+
 type sassignstmt =
   | SVDeAssign of dtype * string * sexpr
   | SAssign of string * sexpr
@@ -18,6 +20,10 @@ type sstmt =
   | SReturn of sexpr
   | SVDeclare of dtype * string
   | SAssignStmt of sassignstmt
+  | SIf of sexpr * sstmt list
+  | SIfElse of sexpr * sstmt list * sstmt list
+  | SFor of sassignstmt * sexpr * sexpr * sstmt list
+  | SWhile of sexpr * sstmt list
 
 type sbind = dtype * string
 

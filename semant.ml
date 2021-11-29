@@ -49,35 +49,46 @@ let check (program) =
           let sinputs = List.map (fun a -> check_expr a env) inputs in
           (Int, SFunc(id, sinputs))
   in  
-  (*let rec check_stmt = function
-    | Assign (n, e) -> SAssign (n, check_expr e)
-    | Expr e -> SExpr (check_expr e)
-    | Return e -> SReturn (check_expr e)
-    | VDeclare (ty, n) -> SVDeclare(ty, n)
-    | VDeAssign (ty, n, e) -> SVDeAssign(ty, n, check_expr e)
-  and check_stmt_list = function
-    | [ (Return _ as s) ] -> [ check_stmt s ]
-    | Return _ :: _ -> raise (Failure "Unreachable statments after return")
-    | s :: ss -> check_stmt s :: check_stmt_list ss
-    | [] -> []
-  in*)
   (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
   let rec check_stmt env stmt = match stmt with
       Expr e -> (SExpr (check_expr e env), env)
       | Return e -> let (t, e') = check_expr e env in (SReturn (t, e'), env)
       | VDeclare(t,s) ->  (SVDeclare(t, s), StringMap.add s t env)
-      | AssignStmt astmt -> match astmt with
-                              VDeAssign(t,s,e) ->  
-                                  let (t', e') = check_expr e env in
-                                  let decl_type = check_assign t t' "Type not correct" in
-                                  (SAssignStmt(SVDeAssign(t, s, check_expr e env)), StringMap.add s decl_type env)
-                              | Assign(s,e) -> 
-                                  let left_typ = type_of_identifier s env
-                                  and (right_typ, e') = check_expr e env in
-                                  let error = "Illegal assignment!"
-                                  in 
-                                    ignore(check_assign left_typ right_typ error);
-                                    (SAssignStmt(SAssign(s, (right_typ, e'))), env)
+      | AssignStmt astmt -> (
+                              match astmt with
+                                VDeAssign(t,s,e) ->  
+                                    let (t', e') = check_expr e env in
+                                    let decl_type = check_assign t t' "Type not correct" in
+                                    (SAssignStmt(SVDeAssign(t, s, check_expr e env)), StringMap.add s decl_type env)
+                                | Assign(s,e) -> 
+                                    let left_typ = type_of_identifier s env
+                                    and (right_typ, e') = check_expr e env in
+                                    let error = "Illegal assignment!"
+                                    in 
+                                      ignore(check_assign left_typ right_typ error);
+                                      (SAssignStmt(SAssign(s, (right_typ, e'))), env)
+                            )
+      | While(e,stmts) -> (SWhile(check_expr e env, check_stmts env stmts), env)
+      | For(astmt, e2, e3, stmts) -> 
+          let (sastmt, env2)  = match astmt with
+                                  VDeAssign(t,s,e) ->  
+                                      let (t', e') = check_expr e env in
+                                      let decl_type = check_assign t t' "Type not correct" in
+                                      (SVDeAssign(t, s, check_expr e env), StringMap.add s decl_type env)
+                                  | Assign(s,e) -> 
+                                      let left_typ = type_of_identifier s env
+                                      and (right_typ, e') = check_expr e env in
+                                      let error = "Illegal assignment!"
+                                      in 
+                                        ignore(check_assign left_typ right_typ error);
+                                        (SAssign(s, (right_typ, e')), env)
+          in
+            (SFor(sastmt, check_expr e2 env2, check_expr e3 env2, check_stmts env2 stmts), env2)
+      | If(e, stmts) -> (SIf(check_expr e env, check_stmts env stmts), env)
+      | IfElse(e, stmts1, stmts2) -> (SIfElse(check_expr e env, check_stmts env stmts1, check_stmts env stmts2), env)
+  (*and check_elifs env elifs = match elifs with
+    | [] -> []
+    | (e, ss) :: elifs -> let (st, env2) = check_stmts env ss in Elif(check_expr e env, st) :: check_elifs env2 elifs*)
   and check_stmts env stmts = match stmts with
     | [ (Return _ as s) ] -> let (st, env2) = check_stmt env s in [st]
     | Return _ :: _ -> raise (Failure "Unreachable statments after return")
