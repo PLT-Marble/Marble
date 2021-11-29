@@ -1,0 +1,6 @@
+main() {
+    matrix a = [1.1,2.2;3.3,4.4];
+    float b = a[1,1];
+    printf(b);
+    return 0;
+}

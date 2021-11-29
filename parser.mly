@@ -81,6 +81,7 @@ stmt:
 assignstmt:
   dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
 | ID ASSIGN expr { Assign($1, $3) }
+| expr LBRACK expr COMMA expr RBRACK ASSIGN expr { MAssign($1, $3, $5, $8) }
 
 //elifstmts:
 //   /* nothing */  { [] }
@@ -97,6 +98,7 @@ expr:
 | FLIT { FLit($1) }
 | BLIT { BLit($1) }
 | matrix { MLit($1) }
+| expr LBRACK expr COMMA expr RBRACK { Access($1, $3, $5) }
 | ID   { Id($1) }
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }
@@ -117,8 +119,5 @@ matrix_row_list:
 | matrix_row SEMI matrix_row_list { $1 :: $3 }
 
 matrix_row: 
-| element { [$1] }
-| element COMMA matrix_row { $1 :: $3 }
-
-element:
-  FLIT { FLit($1) }
+| expr { [$1] }
+| expr COMMA matrix_row { $1 :: $3 }

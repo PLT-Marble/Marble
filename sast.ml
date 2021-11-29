@@ -9,12 +9,14 @@ and sx =
   | SBLit of bool
   | SMLit of (sexpr list) list
   | SFunc of string * (sexpr list)
+  | SAccess of sexpr * sexpr * sexpr
 
 (*type selifstmt = SElif of sexpr * sstmt list*)
 
 type sassignstmt =
   | SVDeAssign of dtype * string * sexpr
   | SAssign of string * sexpr
+  | SMAssign of sexpr * sexpr * sexpr * sexpr
 
 type sstmt =
   | SExpr of sexpr
@@ -61,11 +63,15 @@ let rec string_of_sexpr (t, e) =
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
   | SFunc(id, inputs) -> id ^ "(" ^ String.concat ", " (List.map string_of_sexpr inputs) ^";\n"
+  | SAccess(e1, e2, e3) ->    
+    string_of_sexpr e1 ^ " " ^ string_of_sexpr e2 ^ " " ^ string_of_sexpr e3
   ) ^ ")"
 
 let rec string_of_sassignstmt = function
   SAssign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
   | SVDeAssign(t, id, sexpr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
+  | SMAssign(id, r, c, v) -> "MAssign: " ^ string_of_sexpr id ^ "[" ^ string_of_sexpr r ^ ", " ^ string_of_sexpr c ^ "] = " ^ string_of_sexpr v ^ ";\n" 
+
 
 let rec string_of_sstmt = function
   SExpr(sexpr) -> string_of_sexpr sexpr ^ ";\n"

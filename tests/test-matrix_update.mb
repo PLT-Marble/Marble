@@ -1,0 +1,6 @@
+main() {
+    matrix a = [1.1,2.2;3.3,4.4];
+    a[0,1] = 5.5;
+    printmf(a);
+    return 0;
+}

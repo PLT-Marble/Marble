@@ -1,5 +1,5 @@
 /*
- *  matrix.c
+ *  matrix_helper.c
  */
 
 #include <stdlib.h>
@@ -66,7 +66,7 @@ int* addm(int* m1, int* m2)
     int size = 2 + rows * cols;
     int *empty = malloc(size * sizeof(int));
     empty[0] = rows;
-    empty[1] = cols;
+    empty[1] = cols;    
     for (int i = 2; i < size; i++) {
         empty[i] = m1[i] + m2[i];
     }

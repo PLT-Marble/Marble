@@ -65,6 +65,24 @@ let translate (program) =
   let printmf_func : L.llvalue =
       L.declare_function "printmf" printmf_t the_module in
 
+  (* functions to easily get number of rows/columns of a matrix *)
+  let get_matrix_rows matrix builder = (* matrix has already gone through expr *)
+  let typ = L.string_of_lltype (L.type_of matrix) in
+  let ret = match typ with
+    "double*" -> let rows = L.build_load matrix "rows" builder 
+      in L.build_fptosi rows i32_t "rowsint" builder 
+    | _ -> L.build_load matrix "rows" builder
+  in ret
+  in
+  let get_matrix_cols matrix builder = 
+    let ptr = L.build_in_bounds_gep matrix [| L.const_int i32_t 1|] "ptr" builder in
+    let typ = L.string_of_lltype (L.type_of ptr) in
+    let ret = match typ with
+      "double*" -> let cols = L.build_load ptr "cols" builder 
+        in L.build_fptosi cols i32_t "colsint" builder 
+      | _ -> L.build_load ptr "cols" builder
+    in ret
+  in
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
   let function_decls : (L.llvalue * sfdecl) StringMap.t =
@@ -212,6 +230,21 @@ let translate (program) =
           | A.Div -> L.build_sdiv
           )
         e1' e2' "tmp" builder
+      | SAccess ((ty, _) as m, r, c) ->
+        (* get desired pointer location *)
+        let matrix = expr builder m 
+        and row_idx = expr builder r
+        and col_idx = expr builder c in 
+        let cols = get_matrix_cols matrix builder in
+        (* row = row_idx * cols *)
+        let row = L.build_mul row_idx cols "row" builder in 
+        (* row_col = (row_idx * cols) + col_idx *)
+        let row_col = L.build_add row col_idx "row_col" builder 
+        and offset = L.const_int i32_t 2 in 
+        (* idx = 2 + (row_idx * cols) + col_idx *)
+        let idx = L.build_add offset row_col "idx" builder in
+        let ptr = L.build_in_bounds_gep matrix [| idx |] "ptr" builder in
+        L.build_load ptr "element" builder
       (* Unary and Negate *)
       (* Function call *)
       | SFunc ("print", [e])
@@ -266,6 +299,30 @@ let translate (program) =
               let e' = expr builder se in
                 ignore (L.build_store e' (lookup s) builder);
                 builder
+          | SMAssign (m, r, c, e) -> 
+              (* get desired pointer location *)
+              let matrix = expr builder m
+              and row_idx = expr builder r
+              and col_idx = expr builder c in 
+              let cols = get_matrix_cols matrix builder in
+              (* row = row_idx * cols *)
+              let row = L.build_mul row_idx cols "row" builder in 
+              (* row_col = (row_idx * cols) + col_idx *)
+              let row_col = L.build_add row col_idx "row_col" builder 
+              and offset = L.const_int i32_t 2 in 
+              (* idx = 2 + (row_idx * cols) + col_idx *)
+              let idx = L.build_add offset row_col "idx" builder in
+              let ptr = L.build_in_bounds_gep matrix [| idx |] "ptr" builder in
+              (* update value at that location *)
+              let e' = expr builder e in
+              let m_typ = L.string_of_lltype (L.type_of matrix) 
+              and e_typ = L.string_of_lltype (L.type_of e') in 
+              let e_fixed = match (m_typ, e_typ) with
+                  "double*", "i32" -> L.build_uitofp e' float_t "float_e" builder
+                | "i32*", "double" -> L.build_fptosi e' i32_t "int_e" builder 
+                | _ -> e'
+              in
+              ignore(L.build_store e_fixed ptr builder); builder
         )
       | SWhile (se, sstmts) ->
           let se_bb = L.append_block context "while" the_function in 
@@ -299,7 +356,7 @@ let translate (program) =
           let else_bb = L.append_block context "else" the_function in
           add_terminal (List.fold_left stmt (L.builder_at_end context else_bb) sstmts2) b_br_merge;
           ignore(L.build_cond_br bool_val then_bb else_bb builder);
-          L.builder_at_end context merge_bb
+          L.builder_at_end context merge_bb      
      in
     (* Build the code for each statement in the function *)
     let builder = List.fold_left stmt builder fdecl.sstmts in
