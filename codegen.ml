@@ -37,10 +37,11 @@ let translate (program) =
     and float_t    = L.double_type context
     and void_t     = L.void_type   context in
 
-  (* Return the LLVM type for a MicroC type *)
+  (* Return the LLVM type for a Marble type *)
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Float -> float_t
+    | A.Bool -> i1_t
     | A.Null  -> void_t
   in
 
@@ -91,28 +92,6 @@ let translate (program) =
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder in
 
-    (* Construct the function's "locals": formal arguments and locally
-       declared variables.  Allocate each on the stack, initialize their
-       value, if appropriate, and remember their values in the "locals" map *)
-    (*let local_vars = 
-      let add_formal m (t, n) p = 
-        L.set_value_name n p;
-        let local = L.build_alloca (ltype_of_typ t) n builder in
-          ignore (L.build_store p local builder);
-          Hashtbl.add m n local 
-
-      (* Allocate space for any locally declared variables and add the
-       * resulting registers to our map *)
-      and add_local m (t, n) =
-          let local_var = L.build_alloca (ltype_of_typ t) n builder
-          in Hashtbl.add m n local_var
-      in
-      let formals = Hashtbl.create 20 in 
-        List.fold_left2 add_formal formals fdecl.sformals
-          (Array.to_list (L.params the_function));
-        List.fold_left add_local formals [] 
-    in*)
-
     let local_vars = Hashtbl.create 20 in
 			let add_formal (t, n) p = 
 				L.set_value_name n p;
@@ -136,6 +115,7 @@ let translate (program) =
       match e with
       | SILit i -> L.const_int i32_t i
       | SFLit f -> L.const_float float_t f
+      | SBLit b  -> L.const_int i1_t (if b then 1 else 0)
       (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
       (* Matrix | SMatrixLit (contents, rows, cols) -> *)
@@ -160,7 +140,7 @@ let translate (program) =
         e1' e2' "tmp" builder
       (* Unary and Negate *)
       (* Function call *)
-      | SFunc ("print", [e]) 
+      | SFunc ("print", [e])
       | SFunc ("printb", [e]) ->
 	      L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder      

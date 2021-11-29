@@ -30,6 +30,7 @@ let check (program) =
      Id n -> (type_of_identifier n env, SId n)
     | ILit l -> (Int, SILit l)
     | FLit l -> (Float, SFLit l)
+    | BLit l -> (Bool, SBLit l)
     | Binop(e1, op, e2) as ex -> 
       let (t1, e1') = check_expr e1 env
       and (t2, e2') = check_expr e2 env in
