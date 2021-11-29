@@ -38,6 +38,7 @@ let check (program) =
       (* Determine expression type based on operator and operand types *)
       let ty = match op with
         Add | Sub | Mul | Div when same && t1 = Int   -> Int
+      | Add | Sub | Mul | Div when same && t1 = Float   -> Float
       | _ -> raise (
 	      Failure ("illegal binary operator " ^
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^

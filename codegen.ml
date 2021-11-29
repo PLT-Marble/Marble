@@ -139,6 +139,16 @@ let translate (program) =
       (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
       (* Matrix | SMatrixLit (contents, rows, cols) -> *)
+      | SBinop ((A.Float,_ ) as e1, op, e2) ->
+        let e1' = expr builder e1
+        and e2' = expr builder e2 in
+        (match op with 
+          A.Add     -> L.build_fadd
+        | A.Sub     -> L.build_fsub
+        | A.Mul    -> L.build_fmul
+        | A.Div     -> L.build_fdiv 
+        )
+        e1' e2' "tmp" builder
       | SBinop (e1, op, e2) ->
           let e1' = expr builder e1 and e2' = expr builder e2 in
           (match op with
@@ -147,7 +157,7 @@ let translate (program) =
           | A.Mul -> L.build_mul
           | A.Div -> L.build_sdiv
           )
-            e1' e2' "tmp" builder
+        e1' e2' "tmp" builder
       (* Unary and Negate *)
       (* Function call *)
       | SFunc ("print", [e]) 
