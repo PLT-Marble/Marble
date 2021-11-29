@@ -339,6 +339,12 @@ let translate (program) =
 	    "printf" builder
       | SFunc ("printmf", [e]) ->
         L.build_call printmf_func [| (expr builder e)|] "printmf" builder
+      | SFunc ("rows", [e]) ->
+        let matrix = expr builder e in
+        get_matrix_rows matrix builder
+			| SFunc ("cols", [e]) ->
+        let matrix = expr builder e in
+        get_matrix_cols matrix builder
       (* | SFunc (f, args) ->
         let fdef, fdecl = StringMap.find f function_decls in
         let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -443,8 +449,9 @@ let translate (program) =
      in
     (* Build the code for each statement in the function *)
     let builder = List.fold_left stmt builder fdecl.sstmts in
-    add_terminal builder L.build_ret_void
+    add_terminal builder (L.build_ret (L.const_int i32_t 0))
     (* Add a return if the last block falls off the end *)
+    (* add_terminal builder L.build_ret (L.const_int i32_t 0) *)
     (* add_terminal builder (match fdecl.styp with
         A.Void -> L.build_ret_void
       | A.Float -> L.build_ret (L.const_float float_t 0.0)
