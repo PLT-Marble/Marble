@@ -55,6 +55,7 @@ let translate (program) =
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
 
+  (* built-in function *)
   let printf_t : L.lltype = 
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = 
@@ -64,6 +65,53 @@ let translate (program) =
       L.function_type i32_t [| L.pointer_type float_t |] in
   let printmf_func : L.llvalue =
       L.declare_function "printmf" printmf_t the_module in
+
+  (* matrix addition*)
+
+  let addm_t : L.lltype =
+    L.function_type (L.pointer_type i32_t) [| L.pointer_type i32_t; L.pointer_type i32_t |] in
+  let addm_func : L.llvalue =
+      L.declare_function "addm" addm_t the_module in
+
+  let addmf_t : L.lltype =
+      L.function_type (L.pointer_type float_t) [| L.pointer_type float_t; L.pointer_type float_t |] in
+  let addmf_func : L.llvalue =
+      L.declare_function "addmf" addmf_t the_module in
+
+  (* subtraction *)		
+  let subm_t : L.lltype =
+      L.function_type (L.pointer_type i32_t) [| L.pointer_type i32_t; L.pointer_type i32_t |] in
+  let subm_func : L.llvalue =
+      L.declare_function "subm" subm_t the_module in
+
+  let submf_t : L.lltype =
+      L.function_type (L.pointer_type float_t) [| L.pointer_type float_t; L.pointer_type float_t |] in
+  let submf_func : L.llvalue =
+      L.declare_function "submf" submf_t the_module in	
+
+  (* scalar multiplication*)
+
+  let scalarm_t : L.lltype =
+      L.function_type (L.pointer_type i32_t) [| float_t; L.pointer_type i32_t|] in
+  let scalarm_func : L.llvalue =
+      L.declare_function "scalarm" scalarm_t the_module in
+
+  let scalarmf_t : L.lltype =
+      L.function_type (L.pointer_type float_t) [| float_t; L.pointer_type float_t|] in
+  let scalarmf_func : L.llvalue =
+      L.declare_function "scalarmf" scalarmf_t the_module in
+
+  (* matrix multiplication*)
+
+  let multiplication_t : L.lltype =
+      L.function_type (L.pointer_type i32_t) [| L.pointer_type i32_t; L.pointer_type i32_t|] in
+  let multiplication_func : L.llvalue =
+      L.declare_function "multiplication" multiplication_t the_module in
+
+  let multiplicationf_t : L.lltype =
+      L.function_type (L.pointer_type float_t) [| L.pointer_type float_t; L.pointer_type float_t|] in
+  let multiplicationf_func : L.llvalue =
+      L.declare_function "multiplicationf" multiplicationf_t the_module in
 
   (* functions to easily get number of rows/columns of a matrix *)
   let get_matrix_rows matrix builder = (* matrix has already gone through expr *)
@@ -211,6 +259,41 @@ let translate (program) =
       (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
       (* Matrix | SMatrixLit (contents, rows, cols) -> *)
+      | SBinop ((A.Matrix, _) as m1, op, m2) -> 
+        let m1' = expr builder m1
+        and m2' = expr builder m2 in
+        let ret = match op with 
+          A.Add     -> 
+            L.build_call addmf_func [| m1';m2' |] "addmf" builder
+        | A.Sub     -> L.build_call submf_func [| m1';m2' |] "submf" builder
+        | A.Mul    -> 
+          let (t', _) = m2 in
+              let ret_val' = match t' with
+              A.Int -> 
+                let scalar = L.build_sitofp m2' float_t "scalar" builder in
+                L.build_call scalarmf_func [| scalar;m1' |] "scalarmf" builder
+              | A.Float ->
+                L.build_call scalarmf_func [| m2';m1' |] "scalarmf" builder
+              | _ -> L.build_call multiplicationf_func [| m1';m2' |] "matmf" builder
+            in ret_val'        
+        | _        	-> raise(Failure "internal error: semant should have rejected")
+        in ret
+      | SBinop ((_ as m1), (_ as op), ((A.Matrix,_) as m2)) -> 
+          let m1' = expr builder m1
+          and m2' = expr builder m2 in
+          let ret = match op with 
+          | A.Mul    -> 
+            let (t, _) = m1 in
+            let ret_val = match t with 
+                A.Int -> 
+                let scalar = L.build_sitofp m1' float_t "scalar" builder in
+                L.build_call scalarmf_func [| scalar;m2' |] "scalarmf" builder
+              | A.Float ->
+                L.build_call scalarmf_func [| m1';m2' |] "scalarm" builder
+              | _ -> raise(Failure "should be caught elsewhere")
+            in ret_val
+          | _        	-> raise(Failure "internal error: semant should have rejected")
+          in ret
       | SBinop ((A.Float,_ ) as e1, op, e2) ->
         let e1' = expr builder e1
         and e2' = expr builder e2 in
