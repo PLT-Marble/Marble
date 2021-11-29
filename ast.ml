@@ -7,11 +7,15 @@ type operator =
 type expr =
   | Binop of expr * operator * expr 
   | ILit of int
+  | FLit of float
+  | BLit of bool
   | Id of string
   | Func of string * (expr list)
 
 type dtype = 
   Int
+  | Float
+  | Bool
   | Null
 
 (*type elifstmt = Elif of expr * stmt list*)
@@ -53,6 +57,8 @@ type program = {
 (* Pretty-printing functions from microc *)
 let string_of_typ = function
     Int -> "int" 
+  | Float -> "float"
+  | Bool -> "bool"
   | Null -> "null"
 
 let string_of_op = function
@@ -63,6 +69,8 @@ let string_of_op = function
 
 let rec string_of_expr = function
     ILit(l) -> string_of_int l
+  | FLit(l) -> string_of_float l
+  | BLit(l) -> string_of_bool l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
