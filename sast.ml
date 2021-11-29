@@ -7,6 +7,7 @@ and sx =
   | SILit of int
   | SFLit of float
   | SBLit of bool
+  | SMLit of (sexpr list) list
   | SFunc of string * (sexpr list)
 
 (*type selifstmt = SElif of sexpr * sstmt list*)
@@ -52,6 +53,10 @@ let rec string_of_sexpr (t, e) =
     SILit(l) -> string_of_int l
   | SFLit(l) -> string_of_float l
   | SBLit(l) -> string_of_bool l
+  | SMLit(l) -> 
+    let string_of_row l =
+      String.concat "" (List.map string_of_sexpr l) in
+      String.concat "" (List.map string_of_row l)
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

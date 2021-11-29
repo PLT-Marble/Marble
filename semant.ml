@@ -24,13 +24,30 @@ let check (program) =
   in
   let type_of_identifier s env =
     try StringMap.find s env
-    with Not_found -> raise (Failure ("!!!undeclared identifier " ^ s))
+    with Not_found -> raise (Failure ("undeclared identifier " ^ s))
   in
   let rec check_expr e env = match e with
      Id n -> (type_of_identifier n env, SId n)
     | ILit l -> (Int, SILit l)
     | FLit l -> (Float, SFLit l)
     | BLit l -> (Bool, SBLit l)
+    | MLit l -> 
+      let find_inner_type l = match l with
+          hd::tl -> let (t,e) = (check_expr hd env) in t
+        | _ -> Null
+      in      
+      let find_type mat = match mat with
+          hd::tl -> find_inner_type hd
+        | _ -> Null
+      in
+      let my_type = find_type l in
+      let rec matrix_expr l =  match l with
+          hd::tl -> let (ty,e) = check_expr hd env in
+            if ty != my_type then raise (Failure ("Types in matrix do not match."));
+            (ty, e) :: (matrix_expr tl)
+        | _ -> []
+      in
+      (Matrix, SMLit(List.map matrix_expr l)) 
     | Binop(e1, op, e2) as ex -> 
       let (t1, e1') = check_expr e1 env
       and (t2, e2') = check_expr e2 env in

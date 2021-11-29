@@ -7,7 +7,7 @@
 %token WHILE FOR
 %token RETURN MAIN FUNCTION
 %token NULL
-%token INT FLOAT BOOL
+%token INT FLOAT BOOL MATRIX
 
 %token <int> ILIT
 %token <float> FLIT
@@ -60,6 +60,7 @@ dtype:
 | INT { Int }
 | FLOAT { Float }
 | BOOL { Bool }
+| MATRIX { Matrix }
 
 stmts: 
   /* nothing */  { [] }
@@ -95,6 +96,7 @@ expr:
  ILIT  { ILit($1) }
 | FLIT { FLit($1) }
 | BLIT { BLit($1) }
+| matrix { MLit($1) }
 | ID   { Id($1) }
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }
@@ -106,3 +108,17 @@ inputs:
  /* nothing */  { [] }
 | expr           { [$1] }
 | expr COMMA inputs    { $1 :: $3 }
+
+matrix:
+  LBRACK matrix_row_list RBRACK { $2 }
+
+matrix_row_list:
+|  matrix_row { [$1] }
+| matrix_row SEMI matrix_row_list { $1 :: $3 }
+
+matrix_row: 
+| element { [$1] }
+| element COMMA matrix_row { $1 :: $3 }
+
+element:
+  FLIT { FLit($1) }

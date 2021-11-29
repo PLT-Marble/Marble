@@ -4,5 +4,5 @@ true: package(llvm), package(llvm.analysis)
 # Enable almost all compiler warnings
 true : warn(+a-4)
 
-# Instruct ocamlbuild to ignore the "printbig.o" file when it's building
-"printbig.o": not_hygienic
+# Instruct ocamlbuild to ignore the "matrix.o" file when it's building
+"matrix_helper.o": not_hygienic

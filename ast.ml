@@ -9,6 +9,7 @@ type expr =
   | ILit of int
   | FLit of float
   | BLit of bool
+  | MLit of (expr list) list 
   | Id of string
   | Func of string * (expr list)
 
@@ -16,6 +17,7 @@ type dtype =
   Int
   | Float
   | Bool
+  | Matrix
   | Null
 
 (*type elifstmt = Elif of expr * stmt list*)
@@ -59,6 +61,7 @@ let string_of_typ = function
     Int -> "int" 
   | Float -> "float"
   | Bool -> "bool"
+  | Matrix -> "matrix"
   | Null -> "null"
 
 let string_of_op = function
@@ -71,6 +74,10 @@ let rec string_of_expr = function
     ILit(l) -> string_of_int l
   | FLit(l) -> string_of_float l
   | BLit(l) -> string_of_bool l
+  | MLit(l) -> 
+    let string_of_row l =
+      String.concat "" (List.map string_of_expr l) in
+      String.concat "" (List.map string_of_row l)
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2

@@ -42,6 +42,7 @@ let translate (program) =
       A.Int   -> i32_t
     | A.Float -> float_t
     | A.Bool -> i1_t
+    | A.Matrix -> L.pointer_type float_t
     | A.Null  -> void_t
   in
 
@@ -59,10 +60,10 @@ let translate (program) =
   let printf_func : L.llvalue = 
       L.declare_function "printf" printf_t the_module in
 
-  let printbig_t : L.lltype =
-      L.function_type i32_t [| i32_t |] in
-  let printbig_func : L.llvalue =
-      L.declare_function "printbig" printbig_t the_module in
+  let printmf_t : L.lltype =
+      L.function_type i32_t [| L.pointer_type float_t |] in
+  let printmf_func : L.llvalue =
+      L.declare_function "printmf" printmf_t the_module in
 
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
@@ -116,6 +117,79 @@ let translate (program) =
       | SILit i -> L.const_int i32_t i
       | SFLit f -> L.const_float float_t f
       | SBLit b  -> L.const_int i1_t (if b then 1 else 0)
+      | SMLit l -> 
+        let find_inner_type l = match l with
+            hd::tl -> let (t,e) = hd in t
+          | _ -> A.Int
+        in        
+        let find_type mat = match mat with
+            hd::tl -> find_inner_type hd
+          | _ -> A.Int
+        in
+        let my_type = find_type l in 
+        let make_matrix = match my_type with
+          A.Int ->
+            (* extract rows and column info here *)
+            let count a = List.fold_left (fun x _ -> x + 1) 0 a in
+            let rows = count l in 
+            let cols = count (List.hd l) in
+            let rec valid_dims m = match m with
+                hd::tl -> if count hd == count (List.hd l) 
+                            then valid_dims tl
+                          else false
+              | _ -> true
+            in 
+            if not (valid_dims l) then
+              raise(Failure "all rows of matrices must have the same number of elemens")
+            else
+
+            (* allocate space 2 + rows * cols*)
+            let matrix = L.build_alloca (L.array_type i32_t (2+rows*cols)) "matrix" builder in
+            
+            let eval_row row 
+              = List.fold_left (fun eval_row x -> eval_row @ [expr builder x]) [] row in 
+            let unfolded = List.fold_left (fun unfld row -> unfld @ (eval_row row)) [] l in
+            let unfolded = [L.const_int i32_t rows; L.const_int i32_t cols] @ unfolded in
+            
+            let rec store idx lst = match lst with
+              hd::tl -> let ptr = L.build_in_bounds_gep matrix [| L.const_int i32_t 0; L.const_int i32_t idx|] "ptr" builder in
+                        ignore(L.build_store hd ptr builder);
+                        store (idx + 1) tl;
+              | _ -> ()
+            in
+            store 0 unfolded;
+            L.build_in_bounds_gep matrix [|L.const_int i32_t 0; L.const_int i32_t 0|] "matrix" builder 
+        | A.Float ->
+          let count a = List.fold_left (fun x _ -> x + 1) 0 a in
+          let rows = float_of_int (count l) in 
+          let cols = float_of_int (count (List.hd l)) in
+          let rec valid_dims m = match m with
+              hd::tl -> if count hd == count (List.hd l) 
+                          then valid_dims tl
+                        else false
+            | _ -> true
+          in 
+          if not (valid_dims l) then
+            raise(Failure "all rows of matrices must have the same number of elemens")
+          else
+
+          (* allocate space 2 + rows * cols*)
+          let matrix = L.build_alloca (L.array_type float_t (2+(int_of_float rows)*(int_of_float cols))) "matrix" builder in
+
+          let eval_row row 
+            = List.fold_left (fun eval_row x -> eval_row @ [expr builder x]) [] row in 
+          let unfolded = List.fold_left (fun unfld row -> unfld @ (eval_row row)) [] l in
+          let unfolded = [L.const_float float_t rows; L.const_float float_t cols] @ unfolded in
+          let rec store idx lst = match lst with
+            hd::tl -> let ptr = L.build_in_bounds_gep matrix [| L.const_int i32_t 0; L.const_int i32_t idx|] "ptr" builder in
+                      ignore(L.build_store hd ptr builder);
+                      store (idx + 1) tl;
+            | _ -> ()
+          in
+          store 0 unfolded;
+          L.build_in_bounds_gep matrix [| L.const_int i32_t 0; L.const_int i32_t 0|] "matrix" builder 
+        | _ -> raise (Failure "invalid matrix type")
+        in make_matrix
       (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
       (* Matrix | SMatrixLit (contents, rows, cols) -> *)
@@ -147,6 +221,8 @@ let translate (program) =
       | SFunc ("printf", [e]) -> 
 	      L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
+      | SFunc ("printmf", [e]) ->
+        L.build_call printmf_func [| (expr builder e)|] "printmf" builder
       (* | SFunc (f, args) ->
         let fdef, fdecl = StringMap.find f function_decls in
         let llargs = List.rev (List.map (expr builder) (List.rev args)) in
