@@ -11,7 +11,8 @@ let keyword_table = Hashtbl.create 53
         "int", INT;
         "float", FLOAT;
         "bool", BOOL;
-        "null", NULL;
+        "matrix", MATRIX;
+        "null", NULL;        
         "while", WHILE;
         "for", FOR;
         "if", IF;

@@ -24,13 +24,30 @@ let check (program) =
   in
   let type_of_identifier s env =
     try StringMap.find s env
-    with Not_found -> raise (Failure ("!!!undeclared identifier " ^ s))
+    with Not_found -> raise (Failure ("undeclared identifier " ^ s))
   in
   let rec check_expr e env = match e with
      Id n -> (type_of_identifier n env, SId n)
     | ILit l -> (Int, SILit l)
     | FLit l -> (Float, SFLit l)
     | BLit l -> (Bool, SBLit l)
+    | MLit l -> 
+      let find_inner_type l = match l with
+          hd::tl -> let (t,e) = (check_expr hd env) in t
+        | _ -> Null
+      in      
+      let find_type mat = match mat with
+          hd::tl -> find_inner_type hd
+        | _ -> Null
+      in
+      let my_type = find_type l in
+      let rec matrix_expr l =  match l with
+          hd::tl -> let (ty,e) = check_expr hd env in
+            if ty != my_type then raise (Failure ("Types in matrix do not match."));
+            (ty, e) :: (matrix_expr tl)
+        | _ -> []
+      in
+      (Matrix, SMLit(List.map matrix_expr l)) 
     | Binop(e1, op, e2) as ex -> 
       let (t1, e1') = check_expr e1 env
       and (t2, e2') = check_expr e2 env in
@@ -40,6 +57,10 @@ let check (program) =
       let ty = match op with
         Add | Sub | Mul | Div when same && t1 = Int   -> Int
       | Add | Sub | Mul | Div when same && t1 = Float   -> Float
+      | Add | Sub when same && t1 = Matrix -> Matrix
+      | Mul when same && t1 = Matrix -> Matrix
+      | Mul when t1 = Matrix && (t2 = Float || t2 = Int) -> Matrix
+      | Mul when t2 = Matrix && (t1 = Float || t1 = Int) -> Matrix    
       | _ -> raise (
 	      Failure ("illegal binary operator " ^
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
@@ -48,6 +69,13 @@ let check (program) =
       | Func(id, inputs) ->
           let sinputs = List.map (fun a -> check_expr a env) inputs in
           (Int, SFunc(id, sinputs))
+      | Access(m, r, c) -> 
+          let (r_t, _) = check_expr r env in
+          let (c_t, _) = check_expr c env in
+          if r_t != Int || c_t != Int 
+            then raise(Failure ("index must be of type int"));
+          let (m_t, e) = check_expr m env in
+          (Float, SAccess(check_expr m env, check_expr r env, check_expr c env))
   in  
   (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
   let rec check_stmt env stmt = match stmt with
@@ -55,19 +83,28 @@ let check (program) =
       | Return e -> let (t, e') = check_expr e env in (SReturn (t, e'), env)
       | VDeclare(t,s) ->  (SVDeclare(t, s), StringMap.add s t env)
       | AssignStmt astmt -> (
-                              match astmt with
-                                VDeAssign(t,s,e) ->  
-                                    let (t', e') = check_expr e env in
-                                    let decl_type = check_assign t t' "Type not correct" in
-                                    (SAssignStmt(SVDeAssign(t, s, check_expr e env)), StringMap.add s decl_type env)
-                                | Assign(s,e) -> 
-                                    let left_typ = type_of_identifier s env
-                                    and (right_typ, e') = check_expr e env in
-                                    let error = "Illegal assignment!"
-                                    in 
-                                      ignore(check_assign left_typ right_typ error);
-                                      (SAssignStmt(SAssign(s, (right_typ, e'))), env)
-                            )
+          match astmt with
+            VDeAssign(t,s,e) ->  
+                let (t', e') = check_expr e env in
+                let decl_type = check_assign t t' "Type not correct" in
+                (SAssignStmt(SVDeAssign(t, s, check_expr e env)), StringMap.add s decl_type env)
+            | Assign(s,e) -> 
+                let left_typ = type_of_identifier s env
+                and (right_typ, e') = check_expr e env in
+                let error = "Illegal assignment!"
+                in 
+                  ignore(check_assign left_typ right_typ error);
+                  (SAssignStmt(SAssign(s, (right_typ, e'))), env)
+            | MAssign(m, r, c, e) -> 
+              let (r_t, _) = check_expr r env in
+              let (c_t, _) = check_expr c env in
+              let (e_t, _) = check_expr e env in
+              if r_t != Int || c_t != Int 
+                then raise(Failure ("index must be of type int"));
+              if e_t != Float 
+                then raise(Failure ("value must be of type float"));
+              (SAssignStmt(SMAssign(check_expr m env, check_expr r env, check_expr c env, check_expr e env)), env)
+          )
       | While(e,stmts) -> (SWhile(check_expr e env, check_stmts env stmts), env)
       | For(astmt, e2, e3, stmts) -> 
           let (sastmt, env2)  = match astmt with
@@ -85,7 +122,7 @@ let check (program) =
           in
             (SFor(sastmt, check_expr e2 env2, check_expr e3 env2, check_stmts env2 stmts), env2)
       | If(e, stmts) -> (SIf(check_expr e env, check_stmts env stmts), env)
-      | IfElse(e, stmts1, stmts2) -> (SIfElse(check_expr e env, check_stmts env stmts1, check_stmts env stmts2), env)
+      | IfElse(e, stmts1, stmts2) -> (SIfElse(check_expr e env, check_stmts env stmts1, check_stmts env stmts2), env)      
   (*and check_elifs env elifs = match elifs with
     | [] -> []
     | (e, ss) :: elifs -> let (st, env2) = check_stmts env ss in Elif(check_expr e env, st) :: check_elifs env2 elifs*)

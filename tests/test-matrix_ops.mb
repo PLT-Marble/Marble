@@ -1,0 +1,27 @@
+main() {
+    // mat +/- mat
+    matrix a = [1.1, 2.2; 3.3, 4.4];
+    matrix b = [5.5, 6.6; 7.7, 8.8];
+    matrix c = a + b;
+    printmf(c);
+    matrix d = a - b;
+    printmf(d);
+    // int * mat mat * int
+    int d = 3;
+    matrix e = d * a;
+    printmf(e);
+    matrix f = a * d;
+    printmf(f);
+    // float * mat mat * float
+    float g = 1.1;
+    matrix h = g * a;
+    printmf(h);
+    matrix i = b * g;
+    printmf(i);
+    // mat * mat
+    matrix j = a * b;
+    printmf(j);
+    matrix k = b * a;
+    printmf(k);
+    return 0;
+}
