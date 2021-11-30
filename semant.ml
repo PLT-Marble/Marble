@@ -3,9 +3,17 @@ open Sast
 
 module StringMap = Map.Make (String)
 
+
+(* Semantic checking of the AST. Returns an SAST if successful,
+   throws an exception if something is wrong.
+
+   Check each global variable, then check each function *)
+
+
 let check (program) =
-  let funcs = program.decls.funcs
-  in
+  let globals = program.decls.vars in
+  let funcs = program.decls.funcs in
+
   let check_binds (kind : string) (binds : bind list) =
     List.iter (function
       (Null, b) -> raise (Failure ("illegal null " ^ kind ^ " " ^ b))
@@ -16,11 +24,52 @@ let check (program) =
     | _ :: t -> dups t
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) binds)
   in
+
+
+  (**** Check global variables ****)
+
+  check_binds "global" globals;
+
+  (**** Check functions ****)
+
+  let built_in_decls = 
+    let add_bind map (name, ty) = StringMap.add name {
+      return = Null;
+      fname = name; 
+      formals = [(ty, "PLACEHOLDER")];
+      stmts = [] } map
+    in List.fold_left add_bind StringMap.empty [("print", Int); ("printf", Int); ("printbig", Int)]
+  in
+
+
+  let add_func map fd = 
+    let built_in_err = "function " ^ fd.fname ^ " may not be defined"
+    and dup_err = "duplicate function " ^ fd.fname
+    and make_err er = raise (Failure er)
+    and n = fd.fname (* Name of the function *)
+    in match fd with (* No duplicate functions or redefinitions of built-ins *)
+         _ when StringMap.mem n built_in_decls -> make_err built_in_err
+       | _ when StringMap.mem n map -> make_err dup_err  
+       | _ ->  StringMap.add n fd map 
+  in
+
+  (* Collect all function names into one symbol table *)
+  let function_decls = List.fold_left add_func built_in_decls funcs
+  in
+  
+  (* Return a function from our symbol table *)
+  let find_func s = 
+    try StringMap.find s function_decls
+    with Not_found -> raise (Failure ("unrecognized function " ^ s))
+  in
+
+
   let check_assign lvaluet rvaluet err =
-      if lvaluet = rvaluet then lvaluet else raise (Failure err)
+    if lvaluet = rvaluet then lvaluet else raise (Failure err)
   in  
+
   let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-    StringMap.empty (program.decls.vars)
+    StringMap.empty (globals)
   in
   let type_of_identifier s env =
     try StringMap.find s env
@@ -42,9 +91,22 @@ let check (program) =
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
-      | Func(id, inputs) ->
-          let sinputs = List.map (fun a -> check_expr a env) inputs in
-          (Int, SFunc(id, sinputs))
+      | Func(id, inputs) as func ->
+          let fd = find_func id in
+          let param_length = List.length fd.formals in
+
+          if List.length inputs != param_length then
+            raise (Failure ("expecting " ^ string_of_int param_length ^ " arguments in " ^ string_of_expr func))
+          else 
+            let check_call (ft, _) e = 
+              let (et, e') = check_expr e env in 
+              let err = "illegal argument found " ^ string_of_typ et ^ " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
+              (check_assign ft et err, e')
+          in
+          
+          let args' = List.map2 check_call fd.formals inputs in 
+          (fd.return, SFunc(id, args'))
+
   in  
   (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
   let rec check_stmt env stmt = match stmt with
@@ -94,7 +156,10 @@ let check (program) =
 
   in
   let check_decls vars funcs = 
-    let check_function func =      
+    let check_function func =   
+      (* Make sure no formals or locals are none or duplicates *) 
+      check_binds "formal" func.formals;
+      
     { 
       sreturn = func.return;
       sfname = func.fname; 
