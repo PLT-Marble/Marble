@@ -31,6 +31,16 @@ rule tokenize = parse
 | '-'        { MINUS }
 | '*'        { TIMES }
 | '/'        { DIVIDE }
+| '%'        { MOD }
+| "=="       { EQ }
+| "!="       { NEQ }
+| '<'        { LT }
+| "<="       { LEQ }
+| ">"        { GT }
+| ">="       { GEQ }
+| "!"        { NOT }
+| "&&"       { AND }
+| "||"       { OR }
 (* 2.7 seperators *)
 | '('        { LPAREN }
 | ')'        { RPAREN }

@@ -36,15 +36,30 @@ let check (program) =
       let same = t1 = t2 in
       (* Determine expression type based on operator and operand types *)
       let ty = match op with
-        Add | Sub | Mul | Div when same && t1 = Int   -> Int
+        Add | Sub | Mul | Div | Mod when same && t1 = Int   -> Int
+      | Add | Sub | Mul | Div | Mod when same && t1 = Float -> Float
+      | Equal | Neq            when same               -> Bool
+      | Less | Leq | Greater | Geq
+                        when same && (t1 = Int || t1 = Float) -> Bool
+      | And | Or when same && t1 = Bool -> Bool
+      (* Cannot define Reference equal without specific type *)
       | _ -> raise (
 	      Failure ("illegal binary operator " ^
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
-      | Func(id, inputs) ->
-          let sinputs = List.map (fun a -> check_expr a env) inputs in
-          (Int, SFunc(id, sinputs))
+    | Unary(op, e1) as e -> 
+            let (tp, c) = expr e1 in
+            let ty = match op with
+              Neg when (tp = Int || tp = Float) -> tp
+            | Not when tp = Bool -> Bool
+            | _ -> raise (Failure ("illegal unary operator " ^ 
+                                    string_of_uop op ^ string_of_typ tp ^
+                                    " in " ^ string_of_expr e))
+            in (ty, SUnary(op, (tp, c)))
+    | Func(id, inputs) ->
+      let sinputs = List.map (fun a -> check_expr a env) inputs in
+      (Int, SFunc(id, sinputs))
   in  
   (*let rec check_stmt = function
     | Assign (n, e) -> SAssign (n, check_expr e)

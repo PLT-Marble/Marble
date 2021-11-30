@@ -3,12 +3,25 @@ type operator =
   | Sub
   | Mul
   | Div
+  | Mod
+  | And
+  | Or
+  | Eq
+  | Neq
+  | Less
+  | Leq
+  | Greater
+  | Geq
+
+type uop = Neg | Not
 
 type expr =
   | Binop of expr * operator * expr 
   | ILit of int
   | Id of string
   | Func of string * (expr list)
+  | Unary of uop * expr
+  | Negate of expr
 
 type dtype = 
   Int

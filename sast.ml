@@ -6,6 +6,8 @@ and sx =
   | SId of string
   | SILit of int
   | SFunc of string * (sexpr list)
+  | SUnary of uop * sexpr
+  | SNegate of sexpr
 
 type sassignstmt =
   | SVDeAssign of dtype * string * sexpr

@@ -1,6 +1,8 @@
 %{ open Ast %}
 
-%token PLUS MINUS TIMES DIVIDE
+%token PLUS MINUS TIMES DIVIDE MOD
+%token EQ NEQ LT LEQ GT GEQ
+%token NOT AND OR
 %token ASSIGN 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE COMMA SEMI
 %token RETURN MAIN FUNCTION
@@ -77,6 +79,18 @@ expr:
 | expr TIMES expr  { Binop($1, Mul, $3) }
 | expr DIVIDE expr { Binop($1, Div, $3) }
 | ID LPAREN inputs RPAREN { Func($1, $3) }
+/* revision */
+| MINUS expr       { Unary(Neg, $2) }
+| NOT expr         { Unary(Not, $2) }
+| expr AND expr    { Binop($1, And, $3) }
+| expr OR expr     { Binop($1, Or, $3) }  
+| expr MOD expr { Binop($1, Mod, $3) }
+| expr EQ expr  { Binop($1, Eq, $3) }
+| expr NEQ expr { Binop($1, Neq, $3) }
+| expr LT expr  { Binop($1, Less, $3) }
+| expr LEQ expr { Binop($1, Leq, $3) }
+| expr GT expr  { Binop($1, Greater, $3) }
+| expr GEQ expr { Binop($1, Geq, $3) }
 
 inputs:
  /* nothing */  { [] }
