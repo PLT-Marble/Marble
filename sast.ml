@@ -28,6 +28,7 @@ type sbind = dtype * string
 type smain = { sstmts : sstmt list }
 
 type sfdecl = {
+  sreturn: dtype;
   sfname : string;
   sformals : sbind list;
   sstmts : sstmt list;

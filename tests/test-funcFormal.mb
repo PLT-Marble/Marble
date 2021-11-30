@@ -1,0 +1,10 @@
+int function add(int a, int b){
+    return a + b;
+}
+
+main(){
+    int sum;
+    sum = add(1, 2);
+    print(sum);
+    return 0;
+}
