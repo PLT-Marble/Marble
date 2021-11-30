@@ -96,9 +96,10 @@ let check (program) =
   let check_decls vars funcs = 
     let check_function func =      
     { 
+      sreturn = func.return;
       sfname = func.fname; 
       sformals = func.formals; 
-      sstmts = check_stmts symbols func.stmts
+      sstmts = check_stmts symbols func.stmts;
       (*let (ss, env) = List.fold_left check_stmt symbols func.stmts in ss*)
       (*sstmts = check_stmt_list func.stmts *)
     }

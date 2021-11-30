@@ -176,7 +176,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="tests/test-*.mb tests/fail-*.mb"
+    files="tests/test-func*.mb tests/fail-func*.mb"
 fi
 
 for file in $files

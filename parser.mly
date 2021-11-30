@@ -35,11 +35,12 @@ decls:
 
 vdecl: dtype ID SEMI { $1, $2 }
 
-fdecl: FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
+fdecl: dtype FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
     {
-        fname = $2;
-        formals = List.rev $4;
-        stmts = List.rev $7;
+        return = $1;
+        fname = $3;
+        formals = List.rev $5;
+        stmts = List.rev $8;
     }
 }
 

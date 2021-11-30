@@ -35,6 +35,7 @@ type bind = dtype * string
 type main = { stmts : stmt list }
 
 type fdecl = {
+  return: dtype;
   fname : string;
   formals : bind list;
   stmts : stmt list;

@@ -21,7 +21,7 @@ let translate program =
   let globals = program.sdecls.svars in
   let functions = program.sdecls.sfuncs in
   let main_fdecl =
-    { sfname = "main"; sformals = []; sstmts = program.smain.sstmts }
+    { sfname = "main"; sformals = []; sstmts = program.smain.sstmts; sreturn = A.Null }
   in
   let context = L.global_context () in
 
@@ -86,8 +86,11 @@ let translate program =
         main_fdecl )
       decls_with_main
   in
+
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
+    (* Printf.printf "Debug: build_function_body for %s\n" fdecl.sfname; *)
+
     let the_function, _ = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
@@ -97,30 +100,31 @@ let translate program =
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
-    (*let local_vars =
-        let add_formal m (t, n) p =
-          L.set_value_name n p;
-          let local = L.build_alloca (ltype_of_typ t) n builder in
-            ignore (L.build_store p local builder);
-            Hashtbl.add m n local
-
-        (* Allocate space for any locally declared variables and add the
-         * resulting registers to our map *)
-        and add_local m (t, n) =
-            let local_var = L.build_alloca (ltype_of_typ t) n builder
-            in Hashtbl.add m n local_var
-        in
-        let formals = Hashtbl.create 20 in
-          List.fold_left2 add_formal formals fdecl.sformals
-            (Array.to_list (L.params the_function));
-          List.fold_left add_local formals []
-      in*)
+    (* let local_vars =
+         let add_formal m (t, n) p =
+           L.set_value_name n p;
+           let local = L.build_alloca (ltype_of_typ t) n builder in
+           ignore (L.build_store p local builder);
+           StringMap.add n local m
+         (* Allocate space for any locally declared variables and add the
+          * resulting registers to our map *)
+         and add_local m (t, n) =
+           let local_var = L.build_alloca (ltype_of_typ t) n builder in
+           StringMap.add n local_var m
+         in
+         let formals =
+           List.fold_left2 add_formal StringMap.empty fdecl.sformals
+             (Array.to_list (L.params the_function))
+         in
+         List.fold_left add_local formals fdecl.sformals
+       in *)
+      
     let local_vars = Hashtbl.create 20 in
     let add_formal (t, n) p =
       L.set_value_name n p;
       let local = L.build_alloca (ltype_of_typ t) n builder in
-      ignore (L.build_store p local builder);
-      ignore (Hashtbl.add local_vars n local)
+      (* ignore (L.build_store p local builder); *)
+      Hashtbl.add local_vars n local
     in
 
     List.iter2 add_formal fdecl.sformals (Array.to_list (L.params the_function));
@@ -159,15 +163,29 @@ let translate program =
           L.build_call printf_func
             [| float_format_str; expr builder e |]
             "printf" builder
+      | SFunc (f, args) ->
+        (* Printf.printf "Debug: SFunc for %s\n" f; *)
+        (* Printf.printf "Debug: type for %s\n" string_of_expr fdecl.sreturn; *)
+        let (fdef, fdecl) = StringMap.find f function_decls in
+
+        let llargs = List.rev (List.map (expr builder) (List.rev args)) in
+        let result = (match fdecl.sreturn with
+              A.Null -> ""
+            | _ -> f ^ "_result") in
+        L.build_call fdef (Array.of_list llargs) f builder
       (* | SFunc (f, args) ->
-         let fdef, fdecl = StringMap.find f function_decls in
-         let llargs = List.rev (List.map (expr builder) (List.rev args)) in
-         let result = "_result"
-           (* match fdecl.styp with A.Void -> "" | _ -> f ^ "_result" *)
-         in
-         L.build_call fdef (Array.of_list llargs) result builder
-         in
-         ignore (List.map (fun (_, _, v) -> expr builder v) fdecl.sformals); *)
+        let (fdef, fdecl) = StringMap.find f function_decls in
+        let llargs = List.rev (List.map (expr builder) (List.rev args)) in
+        let result = (
+          match fdecl.styp with 
+          | A.Void -> ""
+          | _ -> f ^ "_result"
+        ) 
+        in
+        L.build_call fdef (Array.of_list llargs) result builder
+      in *)
+
+
     in
 
     (* LLVM insists each basic block end with exactly one "terminator"
@@ -184,7 +202,7 @@ let translate program =
           ignore (expr builder e);
           builder
       | SReturn e ->
-          ignore (L.build_ret (expr builder e) builder);
+          L.build_ret (expr builder e) builder;
           builder
       | SVDeclare (t, s) ->
           let local_var = L.build_alloca (ltype_of_typ t) s builder in
