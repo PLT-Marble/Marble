@@ -9,6 +9,8 @@ let keyword_table = Hashtbl.create 53
         "return", RETURN;
         "function", FUNCTION;
         "int", INT;
+        "float", FLOAT;
+        "bool", BOOL;
         "null", NULL;
         "while", WHILE;
         "for", FOR;
@@ -29,6 +31,9 @@ rule tokenize = parse
 | "/*" { comments lexbuf }
 (* 2.1 types *)
 | digits as lit { ILIT(int_of_string lit) }
+| float as lit { FLIT(float_of_string lit) }
+| "true" { BLIT(true) }
+| "false" { BLIT(false) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
 | '+'        { PLUS } 
@@ -47,7 +52,7 @@ rule tokenize = parse
 (* 2.7 keywords *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' 'a'-'z' '0'-'9' '_'] * as id
   { (*print_endline "scanner find id: ";
-    print_endline id;*)
+    print_endline id; *)
     try
       Hashtbl.find keyword_table id
     with Not_found ->

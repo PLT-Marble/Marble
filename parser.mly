@@ -7,9 +7,11 @@
 %token WHILE FOR
 %token RETURN MAIN FUNCTION
 %token NULL
-%token INT
+%token INT FLOAT BOOL
 
 %token <int> ILIT
+%token <float> FLIT
+%token <bool> BLIT
 %token <string> ID
 %token EOF
 
@@ -56,6 +58,8 @@ formals:
 
 dtype: 
 | INT { Int }
+| FLOAT { Float }
+| BOOL { Bool }
 
 stmts: 
   /* nothing */  { [] }
@@ -89,6 +93,8 @@ assignstmt:
 
 expr: 
  ILIT  { ILit($1) }
+| FLIT { FLit($1) }
+| BLIT { BLit($1) }
 | ID   { Id($1) }
 | expr PLUS expr   { Binop($1, Add, $3) }
 | expr MINUS expr  { Binop($1, Sub, $3) }

@@ -1,0 +1,5 @@
+main() {
+    float a = 1.1;
+    printf(a);   
+    return 0;
+}
