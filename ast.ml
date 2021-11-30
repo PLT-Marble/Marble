@@ -11,7 +11,7 @@ type expr =
   | Func of string * (expr list)
 
 type dtype = 
-  Int
+  | Int
   | Null
 
 (*type elifstmt = Elif of expr * stmt list*)
