@@ -92,10 +92,10 @@ Check() {
 
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out" &&
     Run "$MARBLE" "$1" ">" "${basename}.ll" &&
-    # Run "$LLC" "-relocation-model=pic" "${basename}.ll" ">" "${basename}.s" &&
-    # Run "$CC" "-o" "${basename}.exe" "${basename}.s" &&
-    # Run "./${basename}.exe" > "${basename}.out" &&
-    Run "$LLI" "${basename}.ll" > "${basename}.out" &&
+    Run "$LLC" "-relocation-model=pic" "${basename}.ll" ">" "${basename}.s" &&
+    Run "$CC" "-o" "${basename}.exe" "${basename}.s" "matrix_helper.o" &&
+    Run "./${basename}.exe" > "${basename}.out" &&
+    # Run "$LLI" "${basename}.ll" > "${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
     # Report the status and clean up the generated files
@@ -139,6 +139,7 @@ CheckFail() {
 	echo "OK"
 	echo "###### SUCCESS" 1>&2
     else
+    echo "Failed"
 	echo "###### FAILED" 1>&2
 	globalerror=$error
     fi

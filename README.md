@@ -19,4 +19,3 @@ Steps: AST, SAST -> Semant -> CodeGen
 3. expr
 ## Submission
 Email over the weekend; instruction to run it
-
