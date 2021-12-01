@@ -3,14 +3,21 @@ type operator = Add | Sub | Mul | Div
 type expr =
   | Binop of expr * operator * expr
   | ILit of int
+  | FLit of float
+  | BLit of bool
+  | MLit of expr list list
   | Id of string
   | Func of string * expr list
+  | Access of expr * expr * expr
 
-type dtype = Int | Null
+type dtype = Int | Float | Bool | Matrix | Null
 
 (*type elifstmt = Elif of expr * stmt list*)
 
-type assignstmt = VDeAssign of dtype * string * expr | Assign of string * expr
+type assignstmt =
+  | VDeAssign of dtype * string * expr
+  | Assign of string * expr
+  | MAssign of expr * expr * expr * expr
 
 type stmt =
   | Expr of expr
