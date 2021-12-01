@@ -45,7 +45,12 @@ type decls = { vars : bind list; funcs : fdecl list }
 type program = { decls : decls; main : main }
 
 (* Pretty-printing functions from microc *)
-let string_of_typ = function Int -> "int" | Null -> "null"
+let string_of_typ = function
+  | Int -> "int"
+  | Null -> "null"
+  | Float -> "float"
+  | Bool -> "Bool"
+  | Matrix -> "matrix"
 
 let string_of_op = function Add -> "+" | Sub -> "-" | Mul -> "*" | Div -> "/"
 

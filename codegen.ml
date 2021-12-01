@@ -189,7 +189,6 @@ let translate program =
 
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
-    (* Printf.printf "Debug: build_function_body for %s\n" fdecl.sfname; *)
     let the_function, _ = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
