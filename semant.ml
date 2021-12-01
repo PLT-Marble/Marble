@@ -175,18 +175,28 @@ let check program =
         (SReturn (t, e'), env)
     | VDeclare (t, s) -> (SVDeclare (t, s), StringMap.add s t env)
     | AssignStmt astmt -> (
-        match astmt with
-        | VDeAssign (t, s, e) ->
-            let t', e' = check_expr e env in
+      match astmt with
+        VDeAssign(t,s,e) ->  
+            let (t', e') = check_expr e env in
             let decl_type = check_assign t t' "Type not correct" in
-            ( SAssignStmt (SVDeAssign (t, s, check_expr e env)),
-              StringMap.add s decl_type env )
-        | Assign (s, e) ->
+            (SAssignStmt(SVDeAssign(t, s, check_expr e env)), StringMap.add s decl_type env)
+        | Assign(s,e) -> 
             let left_typ = type_of_identifier s env
-            and right_typ, e' = check_expr e env in
-            let error = "Illegal assignment!" in
-            ignore (check_assign left_typ right_typ error);
-            (SAssignStmt (SAssign (s, (right_typ, e'))), env))
+            and (right_typ, e') = check_expr e env in
+            let error = "Illegal assignment!"
+            in 
+              ignore(check_assign left_typ right_typ error);
+              (SAssignStmt(SAssign(s, (right_typ, e'))), env)
+        | MAssign(m, r, c, e) -> 
+          let (r_t, _) = check_expr r env in
+          let (c_t, _) = check_expr c env in
+          let (e_t, _) = check_expr e env in
+          if r_t != Int || c_t != Int 
+            then raise(Failure ("index must be of type int"));
+          if e_t != Float 
+            then raise(Failure ("value must be of type float"));
+          (SAssignStmt(SMAssign(check_expr m env, check_expr r env, check_expr c env, check_expr e env)), env)
+      )
     | While (e, stmts) -> (SWhile (check_expr e env, check_stmts env stmts), env)
     | For (astmt, e2, e3, stmts) ->
         let sastmt, env2 =
