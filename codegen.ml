@@ -300,8 +300,17 @@ let translate (program) =
         (match op with 
           A.Add     -> L.build_fadd
         | A.Sub     -> L.build_fsub
-        | A.Mul    -> L.build_fmul
+        | A.Mul     -> L.build_fmul
         | A.Div     -> L.build_fdiv 
+        | A.Mod     -> L.build_frem
+        | A.Eq      -> L.build_fcmp L.Fcmp.Oeq
+        | A.Neq     -> L.build_fcmp L.Fcmp.One
+        | A.Less    -> L.build_fcmp L.Fcmp.Olt
+        | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+        | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+        | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+        | A.And | A.Or ->
+            raise (Failure "internal error: semant should have rejected and/or on float")
         )
         e1' e2' "tmp" builder
       | SBinop (e1, op, e2) ->
@@ -311,8 +320,23 @@ let translate (program) =
           | A.Sub -> L.build_sub
           | A.Mul -> L.build_mul
           | A.Div -> L.build_sdiv
+          | A.Mod -> L.build_srem
+          | A.Eq      -> L.build_icmp L.Icmp.Eq
+          | A.Neq     -> L.build_icmp L.Icmp.Ne
+          | A.Less    -> L.build_icmp L.Icmp.Slt
+          | A.Leq     -> L.build_icmp L.Icmp.Sle
+          | A.Greater -> L.build_icmp L.Icmp.Sgt
+          | A.Geq     -> L.build_icmp L.Icmp.Sge
+          | A.And     -> L.build_and
+	        | A.Or      -> L.build_or
           )
         e1' e2' "tmp" builder
+      | SUnary(op, ((t, _) as e)) ->
+          let e' = expr builder e in
+	        (match op with
+	            A.Neg when t = A.Float -> L.build_fneg
+	          | A.Neg                  -> L.build_neg
+            | A.Not                  -> L.build_not) e' "tmp" builder
       | SAccess ((ty, _) as m, r, c) ->
         (* get desired pointer location *)
         let matrix = expr builder m 
@@ -423,9 +447,9 @@ let translate (program) =
           let merge_bb = L.append_block context "merge" the_function in
             ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
             L.builder_at_end context merge_bb
-      | SFor (sastmt, se2, se3, sstmts) -> 
+      | SFor (sastmt, se2, sastmt2, sstmts) -> 
           ignore(stmt builder (SAssignStmt sastmt));
-          let body = List.rev (SExpr se3 :: sstmts) in stmt builder (SWhile(se2, body))
+          let body = List.rev (SAssignStmt sastmt2 :: sstmts) in stmt builder (SWhile(se2, body))
       | SIf (se, sstmts) -> 
           let bool_val = expr builder se in 
           let merge_bb = L.append_block context "merge" the_function in 

@@ -1,0 +1,9 @@
+main(){
+    int i = 1;
+    int x = 1;
+    while(x + 10){
+        x = x + i;
+    }
+    print(x);
+    return 0;
+}

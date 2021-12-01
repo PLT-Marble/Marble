@@ -1,6 +1,6 @@
 main(){
-    int x;
-    x = 2;
+    int x = 1;
+    x = !x;
     print(x);
     return 0;
 }

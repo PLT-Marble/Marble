@@ -37,10 +37,22 @@ rule tokenize = parse
 | "false" { BLIT(false) }
 (* 2.6 operators *)
 | '='        { ASSIGN }
+| "+="       { PLUSASSIGN }
+| "-="       { MINUSASSIGN }
 | '+'        { PLUS } 
 | '-'        { MINUS }
 | '*'        { TIMES }
 | '/'        { DIVIDE }
+| '%'        { MOD }
+| "=="       { EQ }
+| "!="       { NEQ }
+| '<'        { LT }
+| "<="       { LEQ }
+| ">"        { GT }
+| ">="       { GEQ }
+| "!"        { NOT }
+| "&&"       { AND }
+| "||"       { OR }
 (* 2.7 seperators *)
 | '('        { LPAREN }
 | ')'        { RPAREN }
