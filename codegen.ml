@@ -21,7 +21,12 @@ let translate program =
   let globals = program.sdecls.svars in
   let functions = program.sdecls.sfuncs in
   let main_fdecl =
-    { sfname = "main"; sformals = []; sstmts = program.smain.sstmts; sreturn = A.Int }
+    {
+      sfname = "main";
+      sformals = [];
+      sstmts = program.smain.sstmts;
+      sreturn = A.Int;
+    }
   in
   let context = L.global_context () in
 
@@ -91,7 +96,6 @@ let translate program =
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
     (* Printf.printf "Debug: build_function_body for %s\n" fdecl.sfname; *)
-
     let the_function, _ = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
@@ -101,27 +105,26 @@ let translate program =
     (* Construct the function's "locals": formal arguments and locally
        declared variables. Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
-
     let local_vars = Hashtbl.create 20 in
-    let add_formal (t, n) p = 
+    let add_formal (t, n) p =
       L.set_value_name n p;
       let local = L.build_alloca (ltype_of_typ t) n builder in
-        ignore (L.build_store p local builder);
-        Hashtbl.add local_vars n local
+      ignore (L.build_store p local builder);
+      Hashtbl.add local_vars n local
     in
 
     (* add formals *)
-    List.iter2 add_formal fdecl.sformals (Array.to_list (L.params the_function));  
+    List.iter2 add_formal fdecl.sformals (Array.to_list (L.params the_function));
 
     (* Return the value for a variable or formal argument.
        Check local names first, then global names *)
-
-    let lookup n = 
+    let lookup n =
       try Hashtbl.find local_vars n
       with Not_found -> (
-        try StringMap.find n global_vars 
-        with Not_found -> raise (Failure ("code gen undeclared identifier " ^ n)))
-    in 
+        try StringMap.find n global_vars
+        with Not_found ->
+          raise (Failure ("Runtime: undeclared identifier " ^ n)))
+    in
 
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) =
@@ -149,14 +152,13 @@ let translate program =
             [| float_format_str; expr builder e |]
             "printf" builder
       | SFunc (f, args) ->
-        let (fdef, fdecl) = StringMap.find f function_decls in
-        
-        let llargs = List.rev (List.map (expr builder) (List.rev args)) in
-        let result = (match fdecl.sreturn with
-            A.Null -> "null"
-            | _ -> f ^ "_result") 
+          let fdef, fdecl = StringMap.find f function_decls in
+
+          let llargs = List.rev (List.map (expr builder) (List.rev args)) in
+          let result =
+            match fdecl.sreturn with A.Null -> "null" | _ -> f ^ "_result"
           in
-        L.build_call fdef (Array.of_list llargs) result builder;
+          L.build_call fdef (Array.of_list llargs) result builder
     in
 
     (* LLVM insists each basic block end with exactly one "terminator"
@@ -239,16 +241,17 @@ let translate program =
     in
     (* Build the code for each statement in the function *)
     let builder = List.fold_left stmt builder fdecl.sstmts in
-    add_terminal builder (match fdecl.sreturn with
-          A.Null -> L.build_ret_void
-        | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
-
+    add_terminal builder
+      (match fdecl.sreturn with
+      | A.Null -> L.build_ret_void
+      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
     (* Add a return if the last block falls off the end *)
     (* add_terminal builder (match fdecl.styp with
          A.Void -> L.build_ret_void
        | A.Float -> L.build_ret (L.const_float float_t 0.0)
        | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)) *)
   in
+
   List.iter build_function_body (main_fdecl :: functions);
 
   the_module
