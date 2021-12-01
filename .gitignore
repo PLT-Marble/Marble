@@ -9,6 +9,8 @@
 *.cmxa
 *.log
 *.ll
+*.diff
+*.err
 .DS_Store
 # ocamlbuild working directory
 _build/
