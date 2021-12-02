@@ -478,7 +478,6 @@ let translate program =
           (match fdecl.sreturn with
           (* Special "return nothing" instr *)
           | A.Null -> L.build_ret_void builder
-          (* Build return statement *)
           (* TODO: test this *)
           | A.Matrix ->
               let e' = expr builder e in
