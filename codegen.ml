@@ -458,7 +458,6 @@ let translate program =
           get_matrix_cols matrix builder
       | SFunc (f, args) ->
           let fdef, fdecl = StringMap.find f function_decls in
-
           let llargs = List.rev (List.map (expr builder) (List.rev args)) in
           let result =
             match fdecl.sreturn with A.Null -> "null" | _ -> f ^ "_result"
@@ -480,7 +479,17 @@ let translate program =
           ignore (expr builder e);
           builder
       | SReturn e ->
-          L.build_ret (expr builder e) builder;
+          (match fdecl.sreturn with
+          (* Special "return nothing" instr *)
+          | A.Null -> L.build_ret_void builder
+          (* Build return statement *)
+          (* TODO: test this *)
+          | A.Matrix ->
+              let e' = expr builder e in
+              L.build_ret
+                (L.build_bitcast e' (ltype_of_typ A.Matrix) "tmp" builder)
+                builder
+          | _ -> L.build_ret (expr builder e) builder);
           builder
       | SVDeclare (t, s) ->
           let local_var = L.build_alloca (ltype_of_typ t) s builder in
@@ -573,13 +582,13 @@ let translate program =
     in
     (* Build the code for each statement in the function *)
     let builder = List.fold_left stmt builder fdecl.sstmts in
-    add_terminal builder (L.build_ret (L.const_int i32_t 0))
+
     (* Add a return if the last block falls off the end *)
-    (* add_terminal builder L.build_ret (L.const_int i32_t 0) *)
-    (* add_terminal builder (match fdecl.styp with
-         A.Void -> L.build_ret_void
-       | A.Float -> L.build_ret (L.const_float float_t 0.0)
-       | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)) *)
+    add_terminal builder
+      (match fdecl.sreturn with
+      | A.Null -> L.build_ret_void
+      | A.Float -> L.build_ret (L.const_float float_t 0.0)
+      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in
 
   List.iter build_function_body (main_fdecl :: functions);

@@ -31,10 +31,10 @@ let check program =
 
   (**** Check functions ****)
   let built_in_decls =
-    let add_bind map (name, ty) =
+    let add_bind map (name, ty, ret) =
       StringMap.add name
         {
-          return = Null;
+          return = ret;
           fname = name;
           formals = [ (ty, "PLACEHOLDER") ];
           stmts = [];
@@ -42,14 +42,14 @@ let check program =
         map
     in
     List.fold_left add_bind StringMap.empty
-      [ 
-        ("print", Int); 
-        ("printf", Float);
-        ("printb", Bool);
-        ("printm", Matrix);
-        ("printmf", Matrix);
-        ("rows", Matrix);
-        ("cols", Matrix);
+      [
+        ("print", Int, Null);
+        ("printf", Float, Null);
+        ("printb", Bool, Null);
+        ("printm", Matrix, Null);
+        ("printmf", Matrix, Null);
+        ("rows", Matrix, Int);
+        ("cols", Matrix, Int);
       ]
   in
 
