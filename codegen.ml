@@ -174,23 +174,19 @@ let translate program =
      call it even before we've created its body *)
   let function_decls : (L.llvalue * sfdecl) StringMap.t =
     let function_decl m fdecl =
-      let name = fdecl.sfname
-      and formal_types =
+      let name = fdecl.sfname in
+      let formal_types =
         Array.of_list (List.map (fun (t, _) -> ltype_of_typ t) fdecl.sformals)
-        (* TODO: remove hardcoded Int, strict function type? *)
       in
-      let ftype = L.function_type (ltype_of_typ A.Int) formal_types in
+      let ftype = L.function_type (ltype_of_typ fdecl.sreturn) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m
     in
-    let decls_with_main =
-      List.fold_left function_decl StringMap.empty functions
-    in
+    let main_decl = List.fold_left function_decl StringMap.empty functions in
+    let formal_types = Array.of_list [] in
+    let ftype = L.function_type i32_t formal_types in
     StringMap.add "main"
-      ( L.define_function "main"
-          (L.function_type i32_t (Array.of_list []))
-          the_module,
-        main_fdecl )
-      decls_with_main
+      (L.define_function "main" ftype the_module, main_fdecl)
+      main_decl
   in
 
   (* Fill in the body of the given function *)
