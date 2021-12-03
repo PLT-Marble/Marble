@@ -237,7 +237,7 @@ int equalf(double *m1, double *m2){
     return 1;
 }
 /*
-int function main(){
+int main(){
     int m1[] = {3,4,7,3,4,5,0,8,3,1,1,4,2,5};
     int m2[] = {4,2,3,6,9,1,2,4,6,8};
     int empty[] = {0,0,0,0,0,0,0,0};
