@@ -17,17 +17,7 @@ open Sast
 module StringMap = Map.Make (String)
 
 (* translate : Sast.program -> Llvm.module *)
-let translate program =
-  let globals = program.sdecls.svars in
-  let functions = program.sdecls.sfuncs in
-  let main_fdecl =
-    {
-      sfname = "main";
-      sformals = [];
-      sstmts = program.smain.sstmts;
-      sreturn = A.Int;
-    }
-  in
+let translate (globals, functions) =
   let context = L.global_context () in
 
   (* Create the LLVM compilation module into which
@@ -181,12 +171,7 @@ let translate program =
       let ftype = L.function_type (ltype_of_typ fdecl.sreturn) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m
     in
-    let main_decl = List.fold_left function_decl StringMap.empty functions in
-    let formal_types = Array.of_list [] in
-    let ftype = L.function_type i32_t formal_types in
-    StringMap.add "main"
-      (L.define_function "main" ftype the_module, main_fdecl)
-      main_decl
+    List.fold_left function_decl StringMap.empty functions
   in
 
   (* Fill in the body of the given function *)
@@ -586,6 +571,6 @@ let translate program =
       | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in
 
-  List.iter build_function_body (main_fdecl :: functions);
+  List.iter build_function_body functions;
 
   the_module

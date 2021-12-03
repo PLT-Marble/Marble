@@ -1,11 +1,27 @@
-%{ open Ast %}
+%{
+open Ast
+let parse_error s =
+      begin
+        try
+          let start_pos = Parsing.symbol_start_pos ()
+          and end_pos = Parsing.symbol_end_pos () in
+          Printf.printf "File \"%s\", line %d, characters %d-%d: \n"
+            start_pos.pos_fname
+            start_pos.pos_lnum
+            (start_pos.pos_cnum - start_pos.pos_bol)
+            (end_pos.pos_cnum - start_pos.pos_bol)
+        with Invalid_argument(_) -> ()
+      end;
+      Printf.printf "Syntax error: %s\n" s;
+      raise Parsing.Parse_error
+%}
 
 %token PLUS MINUS TIMES DIVIDE
 %token ASSIGN 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE COMMA SEMI
 %token IF ELIF ELSE
 %token WHILE FOR
-%token RETURN MAIN FUNCTION
+%token RETURN FUNCTION
 %token NULL
 %token INT FLOAT BOOL MATRIX
 
@@ -25,15 +41,14 @@
 
 %%
 
-program: decls main EOF {{ 
-    decls = $1;
-    main = $2; 
-}}
+program:
+  decls EOF { $1 }
 
-decls: 
-/* nothing */ { { vars = []; funcs = []; } }
-| decls vdecl { { vars = $2 :: $1.vars; funcs = $1.funcs; } }
-| decls fdecl { { vars = $1.vars; funcs = $2 :: $1.funcs; } }
+decls:
+   /* nothing */ { ([], [])               }
+ | decls vdecl { (($2 :: fst $1), snd $1) }
+ | decls fdecl { (fst $1, ($2 :: snd $1)) }
+
 
 vdecl: dtype ID SEMI { $1, $2 }
 
@@ -43,12 +58,6 @@ fdecl: dtype FUNCTION ID LPAREN formals RPAREN LBRACE stmts RBRACE {
         fname = $3;
         formals = List.rev $5;
         stmts = List.rev $8;
-    }
-}
-
-main: MAIN LPAREN RPAREN LBRACE stmts RBRACE {
-    {
-        stmts = List.rev $5
     }
 }
 

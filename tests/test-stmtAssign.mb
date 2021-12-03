@@ -1,6 +1,6 @@
 int x;
 
-main(){
+int function main(){
     x = 1;
     x = x + 1;
     print(x);

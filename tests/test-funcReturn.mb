@@ -10,16 +10,9 @@ bool function getTrue(){
     return true;
 }
 
-matrix function getMatrix(){
-    matrix a = [1.1, 2.2; 3.3, 4.4];
-    return a;
-}
-
-main(){
+int function main(){
     print(get1());
     printf(getPi());
     printb(getTrue());
-    matrix a = getMatrix();
-    printmf(a);
     return 0;
 }
