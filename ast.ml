@@ -31,8 +31,6 @@ type stmt =
 
 type bind = dtype * string
 
-type main = { stmts : stmt list }
-
 type fdecl = {
   return : dtype;
   fname : string;
@@ -40,9 +38,7 @@ type fdecl = {
   stmts : stmt list;
 }
 
-type decls = { vars : bind list; funcs : fdecl list }
-
-type program = { decls : decls; main : main }
+type program = bind list * fdecl list
 
 (* Pretty-printing functions from microc *)
 let string_of_typ = function
@@ -94,12 +90,7 @@ let string_of_fdecl fdecl =
   ^ String.concat "" (List.map string_of_stmt fdecl.stmts)
   ^ "}\n"
 
-let string_of_decls decls =
-  String.concat "" (List.map string_of_vdecl decls.vars)
+let string_of_program (vars, funcs) =
+  String.concat "" (List.map string_of_vdecl vars)
   ^ "\n"
-  ^ String.concat "\n" (List.map string_of_fdecl decls.funcs)
-
-let string_of_program program =
-  string_of_decls program.decls
-  ^ "\n" ^ "inside main: \n"
-  ^ String.concat "\n" (List.map string_of_stmt program.main.stmts)
+  ^ String.concat "\n" (List.map string_of_fdecl funcs)

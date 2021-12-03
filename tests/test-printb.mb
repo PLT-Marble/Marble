@@ -1,4 +1,4 @@
-main(){
+int function main(){
     bool a = false;
     printb(a);
     printb(true);

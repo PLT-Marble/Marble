@@ -1,4 +1,4 @@
-main(){
+int function main(){
     matrix a = [1.0, 2.0; 3.0, 4.0];
     printmf(a);
     matrix b;
