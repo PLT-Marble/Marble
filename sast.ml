@@ -1,14 +1,15 @@
 open Ast
 
 type sexpr = dtype * sx
+
 and sx =
   | SBinop of sexpr * operator * sexpr
   | SId of string
   | SILit of int
   | SFLit of float
   | SBLit of bool
-  | SMLit of (sexpr list) list
-  | SFunc of string * (sexpr list)
+  | SMLit of sexpr list list
+  | SFunc of string * sexpr list
   | SAccess of sexpr * sexpr * sexpr
   | SUnary of uop * sexpr
 
@@ -31,23 +32,14 @@ type sstmt =
 
 type sbind = dtype * string
 
-type smain = { sstmts : sstmt list }
-
 type sfdecl = {
+  sreturn : dtype;
   sfname : string;
   sformals : sbind list;
   sstmts : sstmt list;
 }
 
-type sdecls = { 
-  svars : sbind list; 
-  sfuncs : sfdecl list;
-}
-
-type sprogram = {
-  sdecls: sdecls;
-  smain: smain
-}
+type sprogram = sbind list * sfdecl list
 
 (* Pretty-printing functions from microc *)
 
@@ -70,10 +62,12 @@ let rec string_of_sexpr (t, e) =
   ) ^ ")"
 
 let rec string_of_sassignstmt = function
-  SAssign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
-  | SVDeAssign(t, id, sexpr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
-  | SMAssign(id, r, c, v) -> "MAssign: " ^ string_of_sexpr id ^ "[" ^ string_of_sexpr r ^ ", " ^ string_of_sexpr c ^ "] = " ^ string_of_sexpr v ^ ";\n" 
-
+  | SAssign (v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
+  | SVDeAssign (t, id, sexpr) ->
+      "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"
+  | SMAssign (id, r, c, v) ->
+      "MAssign: " ^ string_of_sexpr id ^ "[" ^ string_of_sexpr r ^ ", "
+      ^ string_of_sexpr c ^ "] = " ^ string_of_sexpr v ^ ";\n"
 
 let rec string_of_sstmt = function
   SExpr(sexpr) -> string_of_sexpr sexpr ^ ";\n"
@@ -88,15 +82,13 @@ let rec string_of_sstmt = function
 let string_of_svdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 
 let string_of_sfdecl fdecl =
-  "fdecl: " ^ fdecl.sfname ^ "(" ^ String.concat ", " (List.map snd fdecl.sformals) ^
-  ")\n{\n" ^
-  String.concat "" (List.map string_of_sstmt fdecl.sstmts) ^
-  "}\n"
+  "fdecl: " ^ fdecl.sfname ^ "("
+  ^ String.concat ", " (List.map snd fdecl.sformals)
+  ^ ")\n{\n"
+  ^ String.concat "" (List.map string_of_sstmt fdecl.sstmts)
+  ^ "}\n"
 
-let string_of_sdecls (decls) =
-  String.concat "" (List.map string_of_svdecl decls.svars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_sfdecl decls.sfuncs)
-
-let string_of_sprogram (program) = 
-  (string_of_sdecls program.sdecls) ^ "\n" ^
-  "inside main: \n" ^ String.concat "\n" (List.map string_of_sstmt program.smain.sstmts)
+let string_of_sprogram (svars, sfuncs) =
+  String.concat "" (List.map string_of_svdecl svars)
+  ^ "\n"
+  ^ String.concat "\n" (List.map string_of_sfdecl sfuncs)
