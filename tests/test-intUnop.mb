@@ -1,6 +1,5 @@
 int function main(){
-    int x;
-    x = 2;
-    print(x);
+    print(-2);
+    
     return 0;
 }

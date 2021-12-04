@@ -1,6 +1,5 @@
 int function main(){
-    int x;
-    x = 2;
-    print(x);
+    printf(-2.1);
+    
     return 0;
 }

@@ -1,4 +1,19 @@
-type operator = Add | Sub | Mul | Div
+type operator =
+  | Add
+  | Sub
+  | Mul
+  | Div
+  | Mod
+  | And
+  | Or
+  | Eq
+  | Neq
+  | Less
+  | Leq
+  | Greater
+  | Geq
+
+type uop = Neg | Not
 
 type expr =
   | Binop of expr * operator * expr
@@ -9,6 +24,7 @@ type expr =
   | Id of string
   | Func of string * expr list
   | Access of expr * expr * expr
+  | Unary of uop * expr
 
 type dtype = Int | Float | Bool | Matrix | Null
 
@@ -26,7 +42,7 @@ type stmt =
   | AssignStmt of assignstmt
   | If of expr * stmt list
   | IfElse of expr * stmt list * stmt list
-  | For of assignstmt * expr * expr * stmt list
+  | For of assignstmt * expr * assignstmt * stmt list
   | While of expr * stmt list
 
 type bind = dtype * string
@@ -48,7 +64,22 @@ let string_of_typ = function
   | Bool -> "Bool"
   | Matrix -> "matrix"
 
-let string_of_op = function Add -> "+" | Sub -> "-" | Mul -> "*" | Div -> "/"
+let string_of_op = function
+  | Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+  | Div -> "/"
+  | Mod -> "%"
+  | Eq -> "=="
+  | Neq -> "!="
+  | Less -> "<"
+  | Leq -> "<="
+  | Greater -> ">"
+  | Geq -> ">="
+  | And -> "&&"
+  | Or -> "||"
+
+let string_of_uop = function Neg -> "-" | Not -> "!"
 
 let rec string_of_expr = function
   | ILit l -> string_of_int l
@@ -60,6 +91,7 @@ let rec string_of_expr = function
   | Id s -> s
   | Binop (e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unary (o, e) -> string_of_uop o ^ string_of_expr e
   | Func (id, inputs) ->
       id ^ "(" ^ String.concat ", " (List.map string_of_expr inputs) ^ ";\n"
   | Access (e1, e2, e3) ->
@@ -77,9 +109,26 @@ let rec string_of_stmt = function
   | Expr expr -> string_of_expr expr ^ ";\n"
   | Return expr -> "return: " ^ string_of_expr expr ^ ";\n"
   | AssignStmt assignstmt -> string_of_assignstmt assignstmt
-  (* | Assign(v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n" *)
   | VDeclare (t, id) -> "VDeclare: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
-(*| VDeAssign(t, id, expr) -> "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"*)
+  | While (e, ss) ->
+      "While(" ^ string_of_expr e ^ ") { "
+      ^ String.concat "\n" (List.map string_of_stmt ss)
+      ^ " }\n"
+  | For (as1, e, as2, ss) ->
+      "For( " ^ string_of_assignstmt as1 ^ "; " ^ string_of_expr e ^ "; "
+      ^ string_of_assignstmt as2 ^ ") { "
+      ^ String.concat "\n" (List.map string_of_stmt ss)
+      ^ " }\n"
+  | If (e, ss) ->
+      "If( " ^ string_of_expr e ^ ") {"
+      ^ String.concat "\n" (List.map string_of_stmt ss)
+      ^ " }\n"
+  | IfElse (e, ss1, ss2) ->
+      "If( " ^ string_of_expr e ^ ") {"
+      ^ String.concat "\n" (List.map string_of_stmt ss1)
+      ^ " } Else{ "
+      ^ String.concat "\n" (List.map string_of_stmt ss2)
+      ^ " }\n"
 
 let string_of_vdecl (t, id) = "vdecl: " ^ string_of_typ t ^ " " ^ id ^ ";\n"
 

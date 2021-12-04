@@ -4,5 +4,11 @@ int function main(){
     x = 1;
     x = x + 1;
     print(x);
+
+    x += 2;
+    print(x);
+
+    x -= 2;
+    print(x);
     return 0;
 }

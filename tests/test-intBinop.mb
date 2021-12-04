@@ -3,5 +3,15 @@ int function main(){
     print(1*2);
     print(2-1);
     print(4/2);
+
+    print(4%3);
+
+    printb(4<2);
+    printb(4>2);
+    printb(3>=3);
+    printb(5<=3);
+    printb(3==3);
+    printb(3!=4);
+    
     return 0;
 }
