@@ -1,0 +1,18 @@
+int function get1(){
+    return 1;
+}
+
+float function getPi(){
+    return 3.14;
+}
+
+bool function getTrue(){
+    return true;
+}
+
+int function main(){
+    print(get1());
+    printf(getPi());
+    printb(getTrue());
+    return 0;
+}

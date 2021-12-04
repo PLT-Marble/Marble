@@ -1,4 +1,4 @@
-main(){
+int function main(){
     int x;
     x = 1;
     print(x);

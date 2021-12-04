@@ -1,0 +1,9 @@
+int function custom_print(int a){
+    print(1);
+    return 1;
+}
+
+int function main(){
+    custom_print(1);
+    return 0;
+}
