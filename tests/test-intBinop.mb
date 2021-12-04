@@ -6,12 +6,12 @@ int function main(){
 
     print(4%3);
 
-    print(4<2);
-    print(4>2);
-    print(3>=3);
-    print(5<=3);
-    print(3==3);
-    print(3!=4);
+    printb(4<2);
+    printb(4>2);
+    printb(3>=3);
+    printb(5<=3);
+    printb(3==3);
+    printb(3!=4);
     
     return 0;
 }

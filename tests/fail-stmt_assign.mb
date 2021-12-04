@@ -1,5 +1,5 @@
 int x;
-main(){
+int function main(){
     x = 1.1;
     print(x);
     return 0;

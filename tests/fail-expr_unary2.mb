@@ -1,6 +1,6 @@
-main(){
+int function main(){
     bool x = true;
     x = -x;
-    print(x);
+    printb(x);
     return 0;
 }

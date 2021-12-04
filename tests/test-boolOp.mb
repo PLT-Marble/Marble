@@ -1,12 +1,13 @@
-main(){
-    print(true&&true);
-    print(true&&false);
+int function main(){
+    printb(true&&true);
+    printb(true&&false);
 
-    print(true||false);
-    print(true||true);
-    print(false||true);
-    print(false||false);
+    printb(true||false);
+    printb(true||true);
+    printb(false||true);
+    printb(false||false);
 
-    print(!true);
-    print(!false);
+    printb(!true);
+    printb(!false);
+    return 0;
 }

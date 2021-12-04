@@ -1,4 +1,4 @@
-main(){
+int function main(){
     int x = 1;
     float y = 2.0;
     x = x + y;

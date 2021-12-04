@@ -1,7 +1,8 @@
-main() {
+int function main() {
     int a = 1;
     if(a + 0){ 
         a = -1;
     }
     print(a);
+    return 0;
 }
