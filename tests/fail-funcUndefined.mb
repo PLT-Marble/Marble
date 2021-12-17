@@ -1,0 +1,4 @@
+int function main(){
+    custom_print();
+    return 0;
+}
