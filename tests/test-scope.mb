@@ -1,0 +1,14 @@
+int a;
+
+int function foo(){
+    int a = 1;
+    print(a);
+    return 0;
+}
+
+int function main(){
+    int a = 2;
+    foo();
+    print(a);
+    return 0;
+}
