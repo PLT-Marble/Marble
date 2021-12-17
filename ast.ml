@@ -93,7 +93,7 @@ let rec string_of_expr = function
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unary (o, e) -> string_of_uop o ^ string_of_expr e
   | Func (id, inputs) ->
-      id ^ "(" ^ String.concat ", " (List.map string_of_expr inputs) ^ ";\n"
+      id ^ "(" ^ String.concat ", " (List.map string_of_expr inputs) ^ ");\n"
   | Access (e1, e2, e3) ->
       string_of_expr e1 ^ " " ^ string_of_expr e2 ^ " " ^ string_of_expr e3
 
