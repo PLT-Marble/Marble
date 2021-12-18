@@ -61,12 +61,6 @@ let translate (globals, functions) =
     L.declare_function "printf" printf_t the_module
   in
 
-  (* Not sure if this is correct?? *)
-  let printm_t : L.lltype = L.function_type i32_t [| L.pointer_type i32_t |] in
-  let printm_func : L.llvalue =
-    L.declare_function "printm" printm_t the_module
-  in
-
   let printmf_t : L.lltype =
     L.function_type i32_t [| L.pointer_type float_t |]
   in
@@ -453,9 +447,7 @@ let translate (globals, functions) =
       | SFunc ("printf", [ e ]) ->
           L.build_call printf_func
             [| float_format_str; expr builder e |]
-            "printf" builder
-      | SFunc ("printm", [ e ]) ->
-          L.build_call printm_func [| expr builder e |] "printm" builder
+            "printf" builder      
       | SFunc ("printmf", [ e ]) ->
           L.build_call printmf_func [| expr builder e |] "printmf" builder
       | SFunc ("rows", [ e ]) ->

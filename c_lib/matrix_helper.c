@@ -1,35 +1,11 @@
 /*
  *  matrix_helper.c
+ *  reference: https://github.com/emilydringel/MATRIX_MANIA/blob/main/c_functions/matrix_functions.c
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-int printm(int* element_one) /* prints the matrix<int> */
-{
-    int rows = element_one[0];
-    int cols = element_one[1];
-    int size = rows * cols;
-    char matrix[size*100]; /* maybe should be better about size?? */
-    strcpy(matrix, "");
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-            int location = 2 + (i*cols) + j;
-            char buffer[1000];
-            sprintf(buffer, "%d", element_one[location]);
-            strcat(matrix, buffer);
-            if(j!=cols-1){
-                strcat(matrix, " ");
-            }
-        }
-        if(i!=rows-1){
-            strcat(matrix, "\n");
-        }
-    }
-    printf("%s\n", matrix);
-    return 0;
-}
 
 void printmf(double* element_one) /* prints the matrix<int> */
 {
@@ -236,12 +212,3 @@ int equalf(double *m1, double *m2){
     }
     return 1;
 }
-/*
-int main(){
-    int m1[] = {3,4,7,3,4,5,0,8,3,1,1,4,2,5};
-    int m2[] = {4,2,3,6,9,1,2,4,6,8};
-    int empty[] = {0,0,0,0,0,0,0,0};
-    multiplication(m1, m2, empty);
-    printm(empty);
-}
-*/
