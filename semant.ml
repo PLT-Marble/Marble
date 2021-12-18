@@ -39,7 +39,6 @@ let check (globals, functions) =
         ("print", [ Int ], Null);
         ("printb", [ Bool ], Null);
         ("printf", [ Float ], Null);
-        ("printm", [ Matrix ], Null);
         ("printmf", [ Matrix ], Null);
         ("rows", [ Matrix ], Int);
         ("cols", [ Matrix ], Int);
