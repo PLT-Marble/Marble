@@ -97,7 +97,7 @@ let rec string_of_expr = function
   | Access (e1, e2, e3) ->
       string_of_expr e1 ^ " " ^ string_of_expr e2 ^ " " ^ string_of_expr e3
 
-let rec string_of_assignstmt = function
+let string_of_assignstmt = function
   | VDeAssign (t, id, expr) ->
       "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_expr expr ^ ";\n"
   | Assign (v, e) -> "Assign: " ^ v ^ " = " ^ string_of_expr e ^ ";\n"

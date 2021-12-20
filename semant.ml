@@ -95,11 +95,13 @@ let check (globals, functions) =
    | BLit l -> (Bool, SBLit l)
    | MLit l -> 
      let find_inner_type l = match l with
-         hd::tl -> let (t,e) = (check_expr hd env) in t
+      (* tl e *)
+         hd::_ -> let (t,_) = (check_expr hd env) in t
        | _ -> Null
      in      
      let find_type mat = match mat with
-         hd::tl -> find_inner_type hd
+        (* tl *)
+         hd::_ -> find_inner_type hd
        | _ -> Null
      in
      let my_type = find_type l in
@@ -110,7 +112,7 @@ let check (globals, functions) =
        | _ -> []
      in
      (Matrix, SMLit(List.map matrix_expr l)) 
-   | Binop(e1, op, e2) as ex -> 
+   | Binop(e1, op, e2) -> 
      let (t1, e1') = check_expr e1 env
      and (t2, e2') = check_expr e2 env in
      (* All binary operators require operands of the same type *)
@@ -167,7 +169,8 @@ let check (globals, functions) =
          let (c_t, _) = check_expr c env in
          if r_t != Int || c_t != Int 
            then raise(Failure ("index must be of type int"));
-         let (m_t, e) = check_expr m env in
+         (* m_t e *)
+         let (_, _) = check_expr m env in
          (Float, SAccess(check_expr m env, check_expr r env, check_expr c env))
  in  
 
@@ -187,7 +190,8 @@ let rec check_stmt env stmt =
   | AssignStmt astmt -> (
       match astmt with
       | VDeAssign (t, s, e) ->
-          let t', e' = check_expr e env in
+          (* e' *)
+          let t', _ = check_expr e env in
           let decl_type = check_assign t t' "Type not correct" in
           ( SAssignStmt (SVDeAssign (t, s, check_expr e env)),
             StringMap.add s decl_type env )
@@ -213,29 +217,35 @@ let rec check_stmt env stmt =
             env ))
 
     | While(e,stmts) -> 
-        let (typ, styp) = check_expr e env in
+        (* styp *)
+        let (typ, _) = check_expr e env in
           if typ != Bool then raise (Failure ("Expect to have a Bool type here."));
           (SWhile(check_expr e env, check_stmts env stmts), env)
     | For(astmt, e2, astmt2, stmts) -> 
         let (sastmt, env2)  = check_assignstmt env astmt
         in
-        let (sastmt2, env3) = check_assignstmt env2 astmt2
+        (* env3 *)
+        let (sastmt2, _) = check_assignstmt env2 astmt2
         in
-        let (typ, styp) = check_expr e2 env2 in
+        (* styp *)
+        let (typ, _) = check_expr e2 env2 in
           if typ != Bool then raise (Failure ("Expect to have a Bool type here."));
           (SFor(sastmt, check_expr e2 env2, sastmt2, check_stmts env2 stmts), env2)
     | If(e, stmts) -> 
-        let (typ, styp) = check_expr e env in
+        (* styp *)
+        let (typ, _) = check_expr e env in
           if typ != Bool then raise (Failure ("Expect to have a Bool type here."));
         (SIf(check_expr e env, check_stmts env stmts), env)
     | IfElse(e, stmts1, stmts2) -> 
-        let (typ, styp) = check_expr e env in
+        (* styp *)
+        let (typ, _) = check_expr e env in
           if typ != Bool then raise (Failure ("Expect to have a Bool type here."));
         (SIfElse(check_expr e env, check_stmts env stmts1, check_stmts env stmts2), env)  
 
   and check_assignstmt env astmt = match astmt with
-    | VDeAssign(t,s,e) ->  
-        let (t', e') = check_expr e env in
+    | VDeAssign(t,s,e) -> 
+        (* e' *) 
+        let (t', _) = check_expr e env in
         let decl_type = check_assign t t' "Type not correct" in
         (SVDeAssign(t, s, check_expr e env), StringMap.add s decl_type env)
     | Assign(s,e) -> 
@@ -245,11 +255,13 @@ let rec check_stmt env stmt =
         in 
           ignore(check_assign left_typ right_typ error);
           (SAssign(s, (right_typ, e')), env)
+    | _ -> raise (Failure ("Illegal assignment in for-loop header!"))
   
    and check_stmts env stmts =
           match stmts with
           | [ (Return _ as s) ] ->
-              let st, env2 = check_stmt env s in
+              (* env2 *)
+              let st, _ = check_stmt env s in
               [ st ]
           | Return _ :: _ -> raise (Failure "Unreachable statments after return")
           | s :: ss ->
