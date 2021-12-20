@@ -61,7 +61,7 @@ let rec string_of_sexpr (t, e) =
     string_of_sexpr e1 ^ " " ^ string_of_sexpr e2 ^ " " ^ string_of_sexpr e3
   ) ^ ")"
 
-let rec string_of_sassignstmt = function
+let string_of_sassignstmt = function
   | SAssign (v, e) -> "Assign: " ^ v ^ " = " ^ string_of_sexpr e ^ ";\n"
   | SVDeAssign (t, id, sexpr) ->
       "VDeAssign: " ^ string_of_typ t ^ id ^ string_of_sexpr sexpr ^ ";\n"

@@ -1,5 +1,6 @@
 %{
 open Ast
+open Lexing
 let parse_error s =
       begin
         try
@@ -21,7 +22,7 @@ let parse_error s =
 %token NOT AND OR
 %token ASSIGN PLUSASSIGN MINUSASSIGN
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE COMMA SEMI
-%token IF ELIF ELSE
+%token IF ELSE
 %token WHILE FOR
 %token RETURN FUNCTION
 %token NULL
@@ -33,14 +34,15 @@ let parse_error s =
 %token <string> ID
 %token EOF
 
-%left IF THEN ELSE
+%left IF ELSE
 %right ASSIGN
-%left PLUS MINUS
-%left TIMES DIVIDE MOD
 %left OR
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
+%left PLUS MINUS
+%left TIMES DIVIDE MOD
+%left LBRACK RBRACK
 %right NOT
 
 %start program

@@ -73,7 +73,8 @@ let translate (globals, functions) =
     L.function_type (L.pointer_type i32_t)
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
-  let addm_func : L.llvalue = L.declare_function "addm" addm_t the_module in
+  (* addm_func *)
+  let _ : L.llvalue = L.declare_function "addm" addm_t the_module in
 
   let addmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
@@ -86,7 +87,8 @@ let translate (globals, functions) =
     L.function_type (L.pointer_type i32_t)
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
-  let subm_func : L.llvalue = L.declare_function "subm" subm_t the_module in
+  (* subm_func *)
+  let _ : L.llvalue = L.declare_function "subm" subm_t the_module in
 
   let submf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
@@ -98,7 +100,8 @@ let translate (globals, functions) =
   let scalarm_t : L.lltype =
     L.function_type (L.pointer_type i32_t) [| float_t; L.pointer_type i32_t |]
   in
-  let scalarm_func : L.llvalue =
+  (* scalarm_func *)
+  let _ : L.llvalue =
     L.declare_function "scalarm" scalarm_t the_module
   in
 
@@ -115,7 +118,8 @@ let translate (globals, functions) =
     L.function_type (L.pointer_type i32_t)
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
-  let multiplication_func : L.llvalue =
+  (*  multiplication_func *)
+  let _ : L.llvalue =
     L.declare_function "multiplication" multiplication_t the_module
   in
 
@@ -206,13 +210,16 @@ let translate (globals, functions) =
       | SMLit l ->
           let find_inner_type l =
             match l with
-            | hd :: tl ->
-                let t, e = hd in
+            (* tl *)
+            | hd :: _ ->
+                (* e *)
+                let t, _ = hd in
                 t
             | _ -> A.Int
           in
           let find_type mat =
-            match mat with hd :: tl -> find_inner_type hd | _ -> A.Int
+            (* tl *)
+            match mat with hd :: _ -> find_inner_type hd | _ -> A.Int
           in
           let my_type = find_type l in
           let make_matrix =
@@ -423,7 +430,8 @@ let translate (globals, functions) =
           | A.Neg -> L.build_neg
           | A.Not -> L.build_not)
             e' "tmp" builder
-      | SAccess (((ty, _) as m), r, c) ->
+      (* | SAccess (((ty, _) as m), r, c) -> *)
+      | SAccess (((_, _) as m), r, c) ->
           (* get desired pointer location *)
           let matrix = expr builder m
           and row_idx = expr builder r
@@ -479,7 +487,7 @@ let translate (globals, functions) =
           ignore (expr builder e);
           builder
       | SReturn e ->
-          (match fdecl.sreturn with
+          ignore (match fdecl.sreturn with
           (* Special "return nothing" instr *)
           | A.Null -> L.build_ret_void builder
           (* TODO: test this *)
