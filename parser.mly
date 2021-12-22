@@ -90,10 +90,10 @@ stmt:
 | RETURN expr SEMI { Return ($2) }
 | dtype ID SEMI { VDeclare($1, $2) }
 | assignstmt SEMI { AssignStmt($1) }
-| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, $6)}
-| FOR LPAREN assignstmt SEMI expr SEMI assignstmt RPAREN LBRACE stmts RBRACE {For($3, $5, $7, $10)} 
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE {If($3, $6)}
-| IF LPAREN expr RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE {IfElse($3, $6, $10)}  
+| WHILE LPAREN expr RPAREN LBRACE stmts RBRACE  {While($3, List.rev $6)}
+| FOR LPAREN assignstmt SEMI expr SEMI assignstmt RPAREN LBRACE stmts RBRACE {For($3, $5, $7, List.rev $10)} 
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE {If($3, List.rev $6)}
+| IF LPAREN expr RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE {IfElse($3, List.rev $6, List.rev $10)}  
 
 assignstmt:
   dtype ID ASSIGN expr { VDeAssign($1, $2, $4) }
