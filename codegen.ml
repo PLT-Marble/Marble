@@ -390,44 +390,47 @@ let translate (globals, functions) =
       | SFunc ("zeros", [ (_, rows); (_, cols) ]) -> (
           match (rows, cols) with
           | SILit r, SILit c ->
-              let matrix =
-                L.build_alloca
-                  (L.array_type float_t (2 + (r * c)))
+              if r == 0 or c == 0 then
+                raise (Failure "rows and cols can't be zero")
+              else
+                let matrix =
+                  L.build_alloca
+                    (L.array_type float_t (2 + (r * c)))
+                    "matrix" builder
+                in
+
+                let eval_row row =
+                  List.fold_left
+                    (fun eval_row _ -> eval_row @ [ L.const_float float_t 0.0 ])
+                    [] row
+                in
+                let unfolded =
+                  List.fold_left (fun unfld row -> unfld @ eval_row row) [] []
+                in
+                let unfolded =
+                  [
+                    L.const_float float_t (float_of_int r);
+                    L.const_float float_t (float_of_int c);
+                  ]
+                  @ unfolded
+                in
+
+                let rec store idx lst =
+                  match lst with
+                  | hd :: tl ->
+                      let ptr =
+                        L.build_in_bounds_gep matrix
+                          [| L.const_int i32_t 0; L.const_int i32_t idx |]
+                          "ptr" builder
+                      in
+                      ignore (L.build_store hd ptr builder);
+                      store (idx + 1) tl
+                  | _ -> ()
+                in
+                store 0 unfolded;
+                L.build_in_bounds_gep matrix
+                  [| L.const_int i32_t 0; L.const_int i32_t 0 |]
                   "matrix" builder
-              in
-
-              let eval_row row =
-                List.fold_left
-                  (fun eval_row _ -> eval_row @ [ L.const_float float_t 0.0 ])
-                  [] row
-              in
-              let unfolded =
-                List.fold_left (fun unfld row -> unfld @ eval_row row) [] []
-              in
-              let unfolded =
-                [
-                  L.const_float float_t (float_of_int r);
-                  L.const_float float_t (float_of_int c);
-                ]
-                @ unfolded
-              in
-
-              let rec store idx lst =
-                match lst with
-                | hd :: tl ->
-                    let ptr =
-                      L.build_in_bounds_gep matrix
-                        [| L.const_int i32_t 0; L.const_int i32_t idx |]
-                        "ptr" builder
-                    in
-                    ignore (L.build_store hd ptr builder);
-                    store (idx + 1) tl
-                | _ -> ()
-              in
-              store 0 unfolded;
-              L.build_in_bounds_gep matrix
-                [| L.const_int i32_t 0; L.const_int i32_t 0 |]
-                "matrix" builder
           | _ -> raise (Failure "Rows and cols of a matrix must be intergers."))
       | SFunc (f, args) ->
           let fdef, fdecl = StringMap.find f function_decls in
