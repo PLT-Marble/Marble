@@ -1,0 +1,9 @@
+int function meth(){
+    int a = 0;
+    return 0;
+}
+int function main(){
+    // Invalid since "a" is not declared in meth2's scope
+    int b = a + 2; 
+	return 0;
+}
