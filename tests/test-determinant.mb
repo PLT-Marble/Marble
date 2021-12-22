@@ -1,13 +1,13 @@
 float function determinant(matrix a){
     int dim = rows(a);
-    float scalar = 1.0;
+    float r_scalar = 1.0;
 
     // Row ops on matrix a to get in upper triangle form
-    for(int fd = 0; fd < dim; fd=fd+1){
-        for(int i = fd + 1; i < dim; i=i+1){
-            scalar = a[i,fd] / a[fd,fd];
-            for(int j = 0; j < dim; j=j+1){
-                a[i,j] = a[i,j] - scalar * a[fd,j];
+    for(int dia = 0; dia < dim; dia=dia+1){
+        for(int r = dia + 1; r < dim; r=r+1){
+            r_scalar = a[r,dia] / a[dia,dia];
+            for(int c = 0; c < dim; c=c+1){
+                a[r,c] = a[r,c] - r_scalar * a[dia,c];
             }
         }
     }
