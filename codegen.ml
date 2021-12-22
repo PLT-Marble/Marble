@@ -369,7 +369,6 @@ let translate (globals, functions) =
           | A.Neg -> L.build_neg
           | A.Not -> L.build_not)
             e' "tmp" builder
-      (* | SAccess (((ty, _) as m), r, c) -> *)
       | SAccess (((_, _) as m), r, c) ->
           (* get desired pointer location *)
           let matrix = expr builder m
@@ -444,10 +443,7 @@ let translate (globals, functions) =
               L.build_in_bounds_gep matrix
                 [| L.const_int i32_t 0; L.const_int i32_t 0 |]
                 "matrix" builder
-          | _ ->
-              raise
-                (Failure
-                   "The first two arguments of function fill must be integer"))
+          | _ -> raise (Failure "Rows and cols of a matrix must be intergers."))
       | SFunc (f, args) ->
           let fdef, fdecl = StringMap.find f function_decls in
           let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -475,7 +471,6 @@ let translate (globals, functions) =
             (match fdecl.sreturn with
             (* Special "return nothing" instr *)
             | A.Null -> L.build_ret_void builder
-            (* TODO: test this *)
             | A.Matrix ->
                 let e' = expr builder e in
                 L.build_ret
@@ -544,9 +539,6 @@ let translate (globals, functions) =
             [
               SAssignStmt sastmt; SWhile (se2, sstmts @ [ SAssignStmt sastmt2 ]);
             ]
-          (*ignore (stmt builder (SAssignStmt sastmt));
-            let body = List.rev (SAssignStmt sastmt2 :: sstmts) in
-            stmt builder (SWhile (se2, body))*)
       | SIf (se, sstmts) ->
           let bool_val = expr builder se in
           let merge_bb = L.append_block context "merge" the_function in

@@ -42,7 +42,7 @@ let check (globals, functions) =
         ("printmf", [ Matrix ], Null);
         ("rows", [ Matrix ], Int);
         ("cols", [ Matrix ], Int);
-        ("zeros", [ Int; Int; ], Matrix);
+        ("zeros", [ Int; Int ], Matrix);
       ]
   in
 
@@ -96,7 +96,6 @@ let check (globals, functions) =
       | MLit l ->
           let find_inner_type l =
             match l with
-            (* tl e *)
             | hd :: _ ->
                 let t, _ = check_expr hd env in
                 t
@@ -182,7 +181,6 @@ let check (globals, functions) =
           let c_t, _ = check_expr c env in
           if r_t != Int || c_t != Int then
             raise (Failure "index must be of type int");
-          (* m_t e *)
           let _, _ = check_expr m env in
           (Float, SAccess (check_expr m env, check_expr r env, check_expr c env))
     in
@@ -203,7 +201,6 @@ let check (globals, functions) =
       | AssignStmt astmt -> (
           match astmt with
           | VDeAssign (t, s, e) ->
-              (* e' *)
               let t', _ = check_expr e env in
               let decl_type = check_assign t t' "Type not correct" in
               ( SAssignStmt (SVDeAssign (t, s, check_expr e env)),
@@ -229,26 +226,21 @@ let check (globals, functions) =
                        check_expr e env )),
                 env ))
       | While (e, stmts) ->
-          (* styp *)
           let typ, _ = check_expr e env in
           if typ != Bool then raise (Failure "Expect to have a Bool type here.");
           (SWhile (check_expr e env, check_stmts env stmts), env)
       | For (astmt, e2, astmt2, stmts) ->
           let sastmt, env2 = check_assignstmt env astmt in
-          (* env3 *)
           let sastmt2, _ = check_assignstmt env2 astmt2 in
-          (* styp *)
           let typ, _ = check_expr e2 env2 in
           if typ != Bool then raise (Failure "Expect to have a Bool type here.");
           ( SFor (sastmt, check_expr e2 env2, sastmt2, check_stmts env2 stmts),
             env )
       | If (e, stmts) ->
-          (* styp *)
           let typ, _ = check_expr e env in
           if typ != Bool then raise (Failure "Expect to have a Bool type here.");
           (SIf (check_expr e env, check_stmts env stmts), env)
       | IfElse (e, stmts1, stmts2) ->
-          (* styp *)
           let typ, _ = check_expr e env in
           if typ != Bool then raise (Failure "Expect to have a Bool type here.");
           ( SIfElse
@@ -257,7 +249,6 @@ let check (globals, functions) =
     and check_assignstmt env astmt =
       match astmt with
       | VDeAssign (t, s, e) ->
-          (* e' *)
           let t', _ = check_expr e env in
           let decl_type = check_assign t t' "Type not correct" in
           (SVDeAssign (t, s, check_expr e env), StringMap.add s decl_type env)
@@ -271,7 +262,6 @@ let check (globals, functions) =
     and check_stmts env stmts =
       match stmts with
       | [ (Return _ as s) ] ->
-          (* env2 *)
           let st, _ = check_stmt env s in
           [ st ]
       | Return _ :: _ -> raise (Failure "Unreachable statments after return")
