@@ -9,5 +9,5 @@ llc -relocation-model=pic ${basename}.ll > ${basename}.s
 cc -o ${basename}.exe ${basename}.s matrix_helper.o
 ./${basename}.exe
 
-generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out"
-rm -f $generatedfiles
+# generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out"
+# rm -f $generatedfiles

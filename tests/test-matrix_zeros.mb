@@ -1,0 +1,5 @@
+int function main() {
+    matrix a = zeros(3, 2);
+    printmf(a);
+    return 0;
+}

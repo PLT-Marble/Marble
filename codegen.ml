@@ -74,7 +74,7 @@ let translate (globals, functions) =
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
   (* addm_func *)
-  let _ : L.llvalue = L.declare_function "addm" addm_t the_module in
+  let (_ : L.llvalue) = L.declare_function "addm" addm_t the_module in
 
   let addmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
@@ -88,7 +88,7 @@ let translate (globals, functions) =
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
   (* subm_func *)
-  let _ : L.llvalue = L.declare_function "subm" subm_t the_module in
+  let (_ : L.llvalue) = L.declare_function "subm" subm_t the_module in
 
   let submf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
@@ -101,9 +101,7 @@ let translate (globals, functions) =
     L.function_type (L.pointer_type i32_t) [| float_t; L.pointer_type i32_t |]
   in
   (* scalarm_func *)
-  let _ : L.llvalue =
-    L.declare_function "scalarm" scalarm_t the_module
-  in
+  let (_ : L.llvalue) = L.declare_function "scalarm" scalarm_t the_module in
 
   let scalarmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
@@ -119,7 +117,7 @@ let translate (globals, functions) =
       [| L.pointer_type i32_t; L.pointer_type i32_t |]
   in
   (*  multiplication_func *)
-  let _ : L.llvalue =
+  let (_ : L.llvalue) =
     L.declare_function "multiplication" multiplication_t the_module
   in
 
@@ -210,74 +208,17 @@ let translate (globals, functions) =
       | SMLit l ->
           let find_inner_type l =
             match l with
-            (* tl *)
             | hd :: _ ->
-                (* e *)
                 let t, _ = hd in
                 t
             | _ -> A.Int
           in
           let find_type mat =
-            (* tl *)
             match mat with hd :: _ -> find_inner_type hd | _ -> A.Int
           in
           let my_type = find_type l in
           let make_matrix =
             match my_type with
-            | A.Int ->
-                (* extract rows and column info here *)
-                let count a = List.fold_left (fun x _ -> x + 1) 0 a in
-                let rows = count l in
-                let cols = count (List.hd l) in
-                let rec valid_dims m =
-                  match m with
-                  | hd :: tl ->
-                      if count hd == count (List.hd l) then valid_dims tl
-                      else false
-                  | _ -> true
-                in
-                if not (valid_dims l) then
-                  raise
-                    (Failure
-                       "all rows of matrices must have the same number of \
-                        elemens")
-                else
-                  (* allocate space 2 + rows * cols*)
-                  let matrix =
-                    L.build_alloca
-                      (L.array_type i32_t (2 + (rows * cols)))
-                      "matrix" builder
-                  in
-
-                  let eval_row row =
-                    List.fold_left
-                      (fun eval_row x -> eval_row @ [ expr builder x ])
-                      [] row
-                  in
-                  let unfolded =
-                    List.fold_left (fun unfld row -> unfld @ eval_row row) [] l
-                  in
-                  let unfolded =
-                    [ L.const_int i32_t rows; L.const_int i32_t cols ]
-                    @ unfolded
-                  in
-
-                  let rec store idx lst =
-                    match lst with
-                    | hd :: tl ->
-                        let ptr =
-                          L.build_in_bounds_gep matrix
-                            [| L.const_int i32_t 0; L.const_int i32_t idx |]
-                            "ptr" builder
-                        in
-                        ignore (L.build_store hd ptr builder);
-                        store (idx + 1) tl
-                    | _ -> ()
-                  in
-                  store 0 unfolded;
-                  L.build_in_bounds_gep matrix
-                    [| L.const_int i32_t 0; L.const_int i32_t 0 |]
-                    "matrix" builder
             | A.Float ->
                 let count a = List.fold_left (fun x _ -> x + 1) 0 a in
                 let rows = float_of_int (count l) in
@@ -334,9 +275,7 @@ let translate (globals, functions) =
             | _ -> raise (Failure "invalid matrix type")
           in
           make_matrix
-      (* null? | SNoexpr     -> L.const_int i32_t 0 *)
       | SId s -> L.build_load (lookup s) s builder
-      (* Matrix | SMatrixLit (contents, rows, cols) -> *)
       | SBinop (((A.Matrix, _) as m1), op, m2) ->
           let m1' = expr builder m1 and m2' = expr builder m2 in
           let ret =
@@ -455,7 +394,7 @@ let translate (globals, functions) =
       | SFunc ("printf", [ e ]) ->
           L.build_call printf_func
             [| float_format_str; expr builder e |]
-            "printf" builder      
+            "printf" builder
       | SFunc ("printmf", [ e ]) ->
           L.build_call printmf_func [| expr builder e |] "printmf" builder
       | SFunc ("rows", [ e ]) ->
@@ -464,6 +403,51 @@ let translate (globals, functions) =
       | SFunc ("cols", [ e ]) ->
           let matrix = expr builder e in
           get_matrix_cols matrix builder
+      | SFunc ("zeros", [ (_, rows); (_, cols) ]) -> (
+          match (rows, cols) with
+          | SILit r, SILit c ->
+              let matrix =
+                L.build_alloca
+                  (L.array_type float_t (2 + (r * c)))
+                  "matrix" builder
+              in
+
+              let eval_row row =
+                List.fold_left
+                  (fun eval_row x -> eval_row @ [ L.const_float float_t 0.0 ])
+                  [] row
+              in
+              let unfolded =
+                List.fold_left (fun unfld row -> unfld @ eval_row row) [] []
+              in
+              let unfolded =
+                [
+                  L.const_float float_t (float_of_int r);
+                  L.const_float float_t (float_of_int c);
+                ]
+                @ unfolded
+              in
+
+              let rec store idx lst =
+                match lst with
+                | hd :: tl ->
+                    let ptr =
+                      L.build_in_bounds_gep matrix
+                        [| L.const_int i32_t 0; L.const_int i32_t idx |]
+                        "ptr" builder
+                    in
+                    ignore (L.build_store hd ptr builder);
+                    store (idx + 1) tl
+                | _ -> ()
+              in
+              store 0 unfolded;
+              L.build_in_bounds_gep matrix
+                [| L.const_int i32_t 0; L.const_int i32_t 0 |]
+                "matrix" builder
+          | _ ->
+              raise
+                (Failure
+                   "The first two arguments of function fill must be integer"))
       | SFunc (f, args) ->
           let fdef, fdecl = StringMap.find f function_decls in
           let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -487,22 +471,23 @@ let translate (globals, functions) =
           ignore (expr builder e);
           builder
       | SReturn e ->
-          ignore (match fdecl.sreturn with
-          (* Special "return nothing" instr *)
-          | A.Null -> L.build_ret_void builder
-          (* TODO: test this *)
-          | A.Matrix ->
-              let e' = expr builder e in
-              L.build_ret
-                (L.build_bitcast e' (ltype_of_typ A.Matrix) "tmp" builder)
-                builder
-          | _ -> L.build_ret (expr builder e) builder);
+          ignore
+            (match fdecl.sreturn with
+            (* Special "return nothing" instr *)
+            | A.Null -> L.build_ret_void builder
+            (* TODO: test this *)
+            | A.Matrix ->
+                let e' = expr builder e in
+                L.build_ret
+                  (L.build_bitcast e' (ltype_of_typ A.Matrix) "tmp" builder)
+                  builder
+            | _ -> L.build_ret (expr builder e) builder);
           builder
       | SVDeclare (t, s) ->
           let local_var = L.build_alloca (ltype_of_typ t) s builder in
           Hashtbl.add local_vars s local_var;
           builder
-      | SAssignStmt sastmt ->(
+      | SAssignStmt sastmt -> (
           match sastmt with
           | SVDeAssign (t, s, se) ->
               let e' = expr builder se in
@@ -554,11 +539,14 @@ let translate (globals, functions) =
           let merge_bb = L.append_block context "merge" the_function in
           ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
           L.builder_at_end context merge_bb
-      | SFor (sastmt, se2, sastmt2, sstmts) -> 
-            List.fold_left stmt builder (SAssignStmt sastmt :: (SWhile(se2, sstmts@(SAssignStmt sastmt2::[]))::[])) 
+      | SFor (sastmt, se2, sastmt2, sstmts) ->
+          List.fold_left stmt builder
+            [
+              SAssignStmt sastmt; SWhile (se2, sstmts @ [ SAssignStmt sastmt2 ]);
+            ]
           (*ignore (stmt builder (SAssignStmt sastmt));
-          let body = List.rev (SAssignStmt sastmt2 :: sstmts) in
-          stmt builder (SWhile (se2, body))*)
+            let body = List.rev (SAssignStmt sastmt2 :: sstmts) in
+            stmt builder (SWhile (se2, body))*)
       | SIf (se, sstmts) ->
           let bool_val = expr builder se in
           let merge_bb = L.append_block context "merge" the_function in

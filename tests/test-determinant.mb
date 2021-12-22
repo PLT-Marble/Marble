@@ -29,7 +29,7 @@ int function main(){
 
     matrix b = [2.0, 0.0, 2.0; 1.0, 1.0, 2.0; 2.0, 1.0, 8.0];
     float det_b = determinant(b);
-    printf(det_b);  // 0
+    printf(det_b);  // 10
 
     return 0;
 }
