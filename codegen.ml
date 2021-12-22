@@ -96,13 +96,7 @@ let translate (globals, functions) =
   in
   let submf_func : L.llvalue = L.declare_function "submf" submf_t the_module in
 
-  (* scalar multiplication*)
-  let scalarm_t : L.lltype =
-    L.function_type (L.pointer_type i32_t) [| float_t; L.pointer_type i32_t |]
-  in
-  (* scalarm_func *)
-  let (_ : L.llvalue) = L.declare_function "scalarm" scalarm_t the_module in
-
+  (* scalar multiplication *)
   let scalarmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| float_t; L.pointer_type float_t |]
@@ -111,16 +105,7 @@ let translate (globals, functions) =
     L.declare_function "scalarmf" scalarmf_t the_module
   in
 
-  (* matrix multiplication*)
-  let multiplication_t : L.lltype =
-    L.function_type (L.pointer_type i32_t)
-      [| L.pointer_type i32_t; L.pointer_type i32_t |]
-  in
-  (*  multiplication_func *)
-  let (_ : L.llvalue) =
-    L.declare_function "multiplication" multiplication_t the_module
-  in
-
+  (* matrix multiplication *)
   let multiplicationf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
@@ -413,7 +398,7 @@ let translate (globals, functions) =
 
               let eval_row row =
                 List.fold_left
-                  (fun eval_row x -> eval_row @ [ L.const_float float_t 0.0 ])
+                  (fun eval_row _ -> eval_row @ [ L.const_float float_t 0.0 ])
                   [] row
               in
               let unfolded =
