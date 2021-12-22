@@ -85,11 +85,11 @@ let check (globals, functions) =
 
     let type_of_identifier s env =
       try StringMap.find s env
-      with Not_found -> raise (Failure ("undeclared identifier " ^ s))
+      with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
     in
 
     let rec check_expr e env = match e with
-    Id n -> (type_of_identifier n env, SId n)
+     Id n -> (type_of_identifier n env, SId n)
    | ILit l -> (Int, SILit l)
    | FLit l -> (Float, SFLit l)
    | BLit l -> (Bool, SBLit l)
@@ -174,7 +174,7 @@ let check (globals, functions) =
          (Float, SAccess(check_expr m env, check_expr r env, check_expr c env))
  in  
 
-    (* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
+(* Check stmts - Return a semantically-checked statement i.e. containing sexprs *)
 let rec check_stmt env stmt =
   match stmt with
   | Expr e -> (SExpr (check_expr e env), env)
@@ -230,7 +230,7 @@ let rec check_stmt env stmt =
         (* styp *)
         let (typ, _) = check_expr e2 env2 in
           if typ != Bool then raise (Failure ("Expect to have a Bool type here."));
-          (SFor(sastmt, check_expr e2 env2, sastmt2, check_stmts env2 stmts), env2)
+          (SFor(sastmt, check_expr e2 env2, sastmt2, check_stmts env2 stmts), env)
     | If(e, stmts) -> 
         (* styp *)
         let (typ, _) = check_expr e env in

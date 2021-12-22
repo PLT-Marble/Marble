@@ -1,0 +1,30 @@
+float function determinant(matrix a){
+    int dim = rows(a);
+
+    // Row ops on matrix a to get in upper triangle form
+    for(int dia = 0; dia < dim; dia=dia+1){
+        for(int r = dia + 1; r < dim; r=r+1){
+            float r_scalar = a[r,dia] / a[dia,dia];
+            for(int c = 0; c < dim; c=c+1){
+                a[r,c] = a[r,c] - r_scalar * a[dia,c];
+            }
+        }
+    }
+
+    // Once matrix a is in upper triangle form
+    // Multiply entries on the diagonal
+    float product = 1.0;
+    for(int i = 0; i < dim; i = i+1){
+        product = product * a[i,i];
+    }
+    return product;
+}
+
+
+int function main(){
+    matrix a = [1.0, 2.0; 3.0, 4.0];
+    float det_a = determinant(a);
+    printf(det_a);  // -2
+
+    return 0;
+} 

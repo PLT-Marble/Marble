@@ -502,7 +502,7 @@ let translate (globals, functions) =
           let local_var = L.build_alloca (ltype_of_typ t) s builder in
           Hashtbl.add local_vars s local_var;
           builder
-      | SAssignStmt sastmt -> (
+      | SAssignStmt sastmt ->(
           match sastmt with
           | SVDeAssign (t, s, se) ->
               let e' = expr builder se in
@@ -554,10 +554,11 @@ let translate (globals, functions) =
           let merge_bb = L.append_block context "merge" the_function in
           ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
           L.builder_at_end context merge_bb
-      | SFor (sastmt, se2, sastmt2, sstmts) ->
-          ignore (stmt builder (SAssignStmt sastmt));
+      | SFor (sastmt, se2, sastmt2, sstmts) -> 
+            List.fold_left stmt builder (SAssignStmt sastmt :: (SWhile(se2, sstmts@(SAssignStmt sastmt2::[]))::[])) 
+          (*ignore (stmt builder (SAssignStmt sastmt));
           let body = List.rev (SAssignStmt sastmt2 :: sstmts) in
-          stmt builder (SWhile (se2, body))
+          stmt builder (SWhile (se2, body))*)
       | SIf (se, sstmts) ->
           let bool_val = expr builder se in
           let merge_bb = L.append_block context "merge" the_function in
