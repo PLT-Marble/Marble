@@ -69,13 +69,6 @@ let translate (globals, functions) =
   in
 
   (* matrix addition*)
-  let addm_t : L.lltype =
-    L.function_type (L.pointer_type i32_t)
-      [| L.pointer_type i32_t; L.pointer_type i32_t |]
-  in
-  (* addm_func *)
-  let (_ : L.llvalue) = L.declare_function "addm" addm_t the_module in
-
   let addmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
@@ -83,13 +76,6 @@ let translate (globals, functions) =
   let addmf_func : L.llvalue = L.declare_function "addmf" addmf_t the_module in
 
   (* subtraction *)
-  let subm_t : L.lltype =
-    L.function_type (L.pointer_type i32_t)
-      [| L.pointer_type i32_t; L.pointer_type i32_t |]
-  in
-  (* subm_func *)
-  let (_ : L.llvalue) = L.declare_function "subm" subm_t the_module in
-
   let submf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
@@ -106,12 +92,12 @@ let translate (globals, functions) =
   in
 
   (* matrix multiplication *)
-  let multiplicationf_t : L.lltype =
+  let multiplicationmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
   in
-  let multiplicationf_func : L.llvalue =
-    L.declare_function "multiplicationf" multiplicationf_t the_module
+  let multiplicationmf_func : L.llvalue =
+    L.declare_function "multiplicationmf" multiplicationmf_t the_module
   in
 
   (* functions to easily get number of rows/columns of a matrix *)
@@ -281,7 +267,7 @@ let translate (globals, functions) =
                       L.build_call scalarmf_func [| m2'; m1' |] "scalarmf"
                         builder
                   | _ ->
-                      L.build_call multiplicationf_func [| m1'; m2' |] "matmf"
+                      L.build_call multiplicationmf_func [| m1'; m2' |] "matmf"
                         builder
                 in
                 ret_val'
@@ -348,6 +334,7 @@ let translate (globals, functions) =
           | A.Or -> L.build_or)
             e1' e2' "tmp" builder
       | SUnary (op, ((t, _) as e)) ->
+          (* Unary and Negate *)
           let e' = expr builder e in
           (match op with
           | A.Neg when t = A.Float -> L.build_fneg
@@ -369,7 +356,6 @@ let translate (globals, functions) =
           let idx = L.build_add offset row_col "idx" builder in
           let ptr = L.build_in_bounds_gep matrix [| idx |] "ptr" builder in
           L.build_load ptr "element" builder
-      (* Unary and Negate *)
       (* Function call *)
       | SFunc ("print", [ e ]) | SFunc ("printb", [ e ]) ->
           L.build_call printf_func
@@ -505,7 +491,6 @@ let translate (globals, functions) =
                 match (m_typ, e_typ) with
                 | "double*", "i32" ->
                     L.build_uitofp e' float_t "float_e" builder
-                | "i32*", "double" -> L.build_fptosi e' i32_t "int_e" builder
                 | _ -> e'
               in
               ignore (L.build_store e_fixed ptr builder);
