@@ -223,7 +223,7 @@ let translate (globals, functions) =
                 else
                   (* allocate space 2 + rows * cols*)
                   let matrix =
-                    L.build_alloca
+                    L.build_malloc
                       (L.array_type float_t
                          (2 + (int_of_float rows * int_of_float cols)))
                       "matrix" builder
@@ -394,7 +394,7 @@ let translate (globals, functions) =
                 raise (Failure "rows and cols can't be zero")
               else
                 let matrix =
-                  L.build_alloca
+                  L.build_malloc
                     (L.array_type float_t (2 + (r * c)))
                     "matrix" builder
                 in
