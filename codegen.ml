@@ -334,6 +334,7 @@ let translate (globals, functions) =
           | A.Or -> L.build_or)
             e1' e2' "tmp" builder
       | SUnary (op, ((t, _) as e)) ->
+          (* Unary and Negate *)
           let e' = expr builder e in
           (match op with
           | A.Neg when t = A.Float -> L.build_fneg
@@ -355,7 +356,6 @@ let translate (globals, functions) =
           let idx = L.build_add offset row_col "idx" builder in
           let ptr = L.build_in_bounds_gep matrix [| idx |] "ptr" builder in
           L.build_load ptr "element" builder
-      (* Unary and Negate *)
       (* Function call *)
       | SFunc ("print", [ e ]) | SFunc ("printb", [ e ]) ->
           L.build_call printf_func
@@ -491,7 +491,6 @@ let translate (globals, functions) =
                 match (m_typ, e_typ) with
                 | "double*", "i32" ->
                     L.build_uitofp e' float_t "float_e" builder
-                | "i32*", "double" -> L.build_fptosi e' i32_t "int_e" builder
                 | _ -> e'
               in
               ignore (L.build_store e_fixed ptr builder);
