@@ -390,7 +390,7 @@ let translate (globals, functions) =
       | SFunc ("zeros", [ (_, rows); (_, cols) ]) -> (
           match (rows, cols) with
           | SILit r, SILit c ->
-              if r == 0 or c == 0 then
+              if r == 0 || c == 0 then
                 raise (Failure "rows and cols can't be zero")
               else
                 let matrix =
