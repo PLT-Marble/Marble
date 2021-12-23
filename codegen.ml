@@ -69,13 +69,6 @@ let translate (globals, functions) =
   in
 
   (* matrix addition*)
-  let addm_t : L.lltype =
-    L.function_type (L.pointer_type i32_t)
-      [| L.pointer_type i32_t; L.pointer_type i32_t |]
-  in
-  (* addm_func *)
-  let (_ : L.llvalue) = L.declare_function "addm" addm_t the_module in
-
   let addmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
@@ -83,13 +76,6 @@ let translate (globals, functions) =
   let addmf_func : L.llvalue = L.declare_function "addmf" addmf_t the_module in
 
   (* subtraction *)
-  let subm_t : L.lltype =
-    L.function_type (L.pointer_type i32_t)
-      [| L.pointer_type i32_t; L.pointer_type i32_t |]
-  in
-  (* subm_func *)
-  let (_ : L.llvalue) = L.declare_function "subm" subm_t the_module in
-
   let submf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
@@ -106,12 +92,12 @@ let translate (globals, functions) =
   in
 
   (* matrix multiplication *)
-  let multiplicationf_t : L.lltype =
+  let multiplicationmf_t : L.lltype =
     L.function_type (L.pointer_type float_t)
       [| L.pointer_type float_t; L.pointer_type float_t |]
   in
-  let multiplicationf_func : L.llvalue =
-    L.declare_function "multiplicationf" multiplicationf_t the_module
+  let multiplicationmf_func : L.llvalue =
+    L.declare_function "multiplicationmf" multiplicationmf_t the_module
   in
 
   (* functions to easily get number of rows/columns of a matrix *)
@@ -281,7 +267,7 @@ let translate (globals, functions) =
                       L.build_call scalarmf_func [| m2'; m1' |] "scalarmf"
                         builder
                   | _ ->
-                      L.build_call multiplicationf_func [| m1'; m2' |] "matmf"
+                      L.build_call multiplicationmf_func [| m1'; m2' |] "matmf"
                         builder
                 in
                 ret_val'

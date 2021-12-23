@@ -81,7 +81,7 @@ double* scalarmf(double x, double* m){
     return empty;
 }
 
-double* multiplicationf(double* m1, double* m2){
+double* multiplicationmf(double* m1, double* m2){
     if(m1[1]!=m2[0]){
         printf("RUNTIME ERROR: matrices being multiplied do not have complementary dimensions.\n");
         exit(1);
